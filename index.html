@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Floema Compara · Cotações Inteligentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#123F30; --verde-2:#1B5942; --verde-3:#0C2B21;
+  --ouro:#A98142; --ouro-2:#C2A063; --ouro-bg:#F6EFDF;
+  --fundo:#F7F5F0; --card:#FFFFFF; --linha:#E8E4DA; --linha-2:#D9D3C4;
+  --tinta:#1A2620; --tinta-2:#68766E; --tinta-3:#9AA69E;
+  --ok:#1E7A4F; --ok-bg:#E7F3EC; --alerta:#B4462E; --alerta-bg:#F9EBE5;
+  --azul:#2B5D8A; --azul-bg:#E9F0F7;
+  --r:16px; --r-sm:11px;
+  --sombra:0 1px 2px rgba(18,63,48,.05),0 6px 20px rgba(18,63,48,.05);
+  --sombra-2:0 4px 8px rgba(18,63,48,.08),0 18px 44px rgba(18,63,48,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--fundo);color:var(--tinta);font-size:15px;line-height:1.55}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--tinta)}
+.mono{font-family:'IBM Plex Mono',monospace}
+::selection{background:var(--ouro-bg)}
+
+/* ---------- Marca ---------- */
+.marca{display:flex;align-items:center;gap:11px}
+.marca-simbolo{flex-shrink:0;display:block}
+.marca-texto{line-height:1.05}
+.marca-nome{font-family:'Fraunces',serif;font-weight:600;letter-spacing:.04em}
+.marca-tag{font-size:.42em;letter-spacing:.42em;text-transform:uppercase;color:var(--ouro-2);font-weight:600;display:block;margin-top:3px}
+
+/* ---------- Login ---------- */
+#login{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:22px;
+  background:radial-gradient(1100px 700px at 75% -10%, #1C5943 0%, #123F30 45%, #0C2B21 100%)}
+#login::before{content:'';position:absolute;inset:0;opacity:.05;
+  background-image:radial-gradient(#fff 1px, transparent 1px);background-size:26px 26px}
+.login-card{position:relative;background:var(--card);border-radius:24px;padding:46px 40px 38px;max-width:400px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,.35);text-align:center}
+.login-card .marca{flex-direction:column;gap:16px;margin-bottom:26px}
+.login-card .marca-nome{font-size:31px;color:var(--verde)}
+.login-sub{color:var(--tinta-2);font-size:13.5px;margin-bottom:26px}
+.login-card input{width:100%;padding:14px 16px;border:1.5px solid var(--linha-2);border-radius:13px;text-align:center;
+  font-size:16px;letter-spacing:.18em;transition:.2s}
+.login-card input:focus{outline:none;border-color:var(--ouro);box-shadow:0 0 0 4px var(--ouro-bg)}
+.login-erro{color:var(--alerta);font-size:13px;font-weight:600;min-height:20px;margin-top:10px}
+.login-btn{width:100%;margin-top:8px;padding:14px;border-radius:13px;background:var(--verde);color:#fff;font-weight:700;
+  font-size:15px;transition:.2s}
+.login-btn:hover{background:var(--verde-2)}
+.login-rodape{margin-top:26px;font-size:11px;color:var(--tinta-3);letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- Loader com progresso ---------- */
+#loader{position:fixed;inset:0;z-index:280;display:none;align-items:center;justify-content:center;
+  background:rgba(247,245,240,.92);backdrop-filter:blur(6px)}
+#loader.on{display:flex}
+.loader-box{text-align:center;width:min(300px,80vw)}
+.loader-box .marca-simbolo{margin:0 auto 18px;animation:pulsa 1.6s ease-in-out infinite}
+@keyframes pulsa{50%{transform:scale(1.07);opacity:.75}}
+.loader-msg{font-weight:600;color:var(--verde);margin-bottom:14px;font-size:14.5px}
+.loader-barra{height:6px;background:var(--linha);border-radius:99px;overflow:hidden}
+.loader-barra i{display:block;height:100%;width:0;border-radius:99px;transition:width .3s ease;
+  background:linear-gradient(90deg,var(--verde-2),var(--ouro))}
+.loader-pct{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--tinta-2);margin-top:10px;font-weight:600}
+
+/* ---------- Header ---------- */
+header{background:var(--verde);color:#fff;position:sticky;top:0;z-index:60;box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.head-in{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:20px;height:64px}
+header .marca-nome{font-size:19px;color:#fff}
+header .marca-tag{margin-top:2px}
+nav{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tab{color:rgba(255,255,255,.66);padding:9px 15px;border-radius:10px;font-weight:500;font-size:14px;white-space:nowrap;transition:.18s;position:relative}
+.tab:hover{color:#fff}
+.tab.on{color:#fff;background:rgba(255,255,255,.11);font-weight:600}
+.tab.on::after{content:'';position:absolute;left:15px;right:15px;bottom:4px;height:2px;border-radius:2px;background:var(--ouro-2)}
+.cart-btn{position:relative;background:var(--ouro);color:#fff;padding:9px 16px;border-radius:11px;font-weight:700;font-size:13.5px;
+  display:flex;align-items:center;gap:8px;transition:.18s;white-space:nowrap}
+.cart-btn:hover{background:var(--ouro-2)}
+.cart-badge{background:#fff;color:var(--ouro);border-radius:99px;font-size:11px;font-weight:800;min-width:19px;height:19px;
+  display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+.sair-btn{color:rgba(255,255,255,.55);font-size:12.5px;font-weight:600;padding:8px 4px}
+.sair-btn:hover{color:#fff}
+
+main{max-width:1200px;margin:0 auto;padding:30px 20px 110px}
+.page{display:none;animation:surge .25s ease}
+.page.on{display:block}
+@keyframes surge{from{opacity:0;transform:translateY(6px)}}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:28px;letter-spacing:.01em;margin-bottom:5px}
+.sub{color:var(--tinta-2);margin-bottom:24px;font-size:14px;max-width:640px}
+.secao{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin:36px 0 14px}
+.olho{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ouro);font-weight:700;margin-bottom:8px}
+
+/* ---------- Componentes ---------- */
+.panel{background:var(--card);border:1px solid var(--linha);border-radius:var(--r);box-shadow:var(--sombra)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:12px;font-weight:600;font-size:14px;transition:.18s}
+.btn-p{background:var(--verde);color:#fff}.btn-p:hover{background:var(--verde-2);transform:translateY(-1px)}
+.btn-o{background:var(--ouro);color:#fff}.btn-o:hover{background:var(--ouro-2)}
+.btn-s{background:#fff;color:var(--verde);border:1.5px solid var(--linha-2)}.btn-s:hover{border-color:var(--verde)}
+.btn-d{background:var(--alerta-bg);color:var(--alerta)}
+.btn-sm{padding:7px 13px;font-size:13px;border-radius:9px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3.5px 10px;border-radius:99px;white-space:nowrap}
+.chip-ok{background:var(--ok-bg);color:var(--ok)}
+.chip-ouro{background:var(--ouro-bg);color:var(--ouro)}
+.chip-alerta{background:var(--alerta-bg);color:var(--alerta)}
+.chip-cinza{background:#EFEDE6;color:var(--tinta-2)}
+.chip-azul{background:var(--azul-bg);color:var(--azul)}
+.trend{font-size:11px;font-weight:700;padding:2.5px 8px;border-radius:7px;white-space:nowrap}
+.t-sobe{background:var(--alerta-bg);color:var(--alerta)}
+.t-cai{background:var(--ok-bg);color:var(--ok)}
+.t-igual{background:#EFEDE6;color:var(--tinta-2)}
+
+/* ---------- Cards clicáveis (padrão do sistema) ---------- */
+.clique{cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+.clique:hover{transform:translateY(-2px);box-shadow:var(--sombra-2);border-color:var(--linha-2)}
+.clique:active{transform:translateY(0)}
+
+/* ---------- Filtros ---------- */
+.filtros{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:16px 18px;margin-bottom:22px}
+.filtros label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2);display:block;margin-bottom:5px}
+.f-grupo{min-width:150px}
+.filtros select,.filtros input[type=text],.filtros input[type=number]{width:100%;padding:10px 13px;border:1.5px solid var(--linha);border-radius:11px;background:#fff;transition:.15s;font-size:14px}
+.filtros select:focus,.filtros input:focus{outline:none;border-color:var(--ouro)}
+.busca{flex:1;min-width:210px}
+.switch-row{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--tinta-2);cursor:pointer;user-select:none;padding-bottom:9px}
+.switch{width:40px;height:22px;background:var(--linha-2);border-radius:99px;position:relative;transition:.2s;flex-shrink:0}
+.switch::after{content:'';position:absolute;top:2.5px;left:3px;width:17px;height:17px;background:#fff;border-radius:99px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+input:checked+.switch{background:var(--ok)}
+input:checked+.switch::after{left:20px}
+.switch-row input{display:none}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px;margin-bottom:22px}
+.kpi{padding:17px 19px}
+.kpi .n{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--verde)}
+.kpi .l{font-size:12px;color:var(--tinta-2);font-weight:600;margin-top:2px}
+
+/* ---------- Comparativo: cards compactos ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+.prod{padding:19px 20px;display:flex;flex-direction:column;gap:8px;position:relative}
+.prod-cat{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-3);font-weight:700}
+.prod-nome{font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;line-height:1.25;min-height:2.2em}
+.prod-preco{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:19px;color:var(--verde);margin-top:2px}
+.prod-preco small{font-size:11.5px;color:var(--tinta-2);font-weight:500}
+.prod-forn{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--tinta-2)}
+.prod-forn b{color:var(--tinta)}
+.prod-rodape{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:11px;border-top:1px solid var(--linha)}
+.prod-n{font-size:12px;color:var(--tinta-2);font-weight:600}
+.prod-abrir{font-size:12.5px;font-weight:700;color:var(--ouro)}
+.vazio{padding:66px 24px;text-align:center;color:var(--tinta-2)}
+.vazio .olho{margin-bottom:10px}
+.vazio b{display:block;font-family:'Fraunces',serif;font-size:20px;color:var(--tinta);margin-bottom:7px;font-weight:600}
+.vazio p{max-width:420px;margin:0 auto 18px;font-size:13.5px}
+
+/* ---------- Ofertas (dentro do modal) ---------- */
+.oferta{border:1.5px solid var(--linha);border-radius:13px;padding:13px 15px;display:flex;flex-direction:column;gap:7px;position:relative;margin-bottom:10px}
+.oferta.melhor{border-color:var(--ok);background:linear-gradient(180deg,#F4FAF6,#fff)}
+.of-linha1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.of-forn{font-weight:700;font-size:14px}
+.of-preco{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;color:var(--verde);white-space:nowrap}
+.of-preco small{font-size:11px;color:var(--tinta-2);font-weight:500}
+.of-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px;color:var(--tinta-2);align-items:center}
+.of-acao{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.of-emb{font-size:12px;color:var(--tinta-2)}
+.barra{height:5px;border-radius:99px;background:#EFEDE6;overflow:hidden}
+.barra i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.medal{position:absolute;top:-10px;left:13px}
+
+/* ---------- Cotações ---------- */
+.acoes-topo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px}
+.acao-card{padding:26px 24px;text-align:center;border:1.5px dashed var(--linha-2);border-radius:var(--r);background:#fff;transition:.2s;cursor:pointer}
+.acao-card:hover{border-color:var(--ouro);background:var(--ouro-bg)}
+.acao-card .ic{font-size:26px;margin-bottom:8px}
+.acao-card b{font-family:'Fraunces',serif;font-size:16px;display:block;margin-bottom:4px;font-weight:600}
+.acao-card p{font-size:12.5px;color:var(--tinta-2)}
+.cot-lista{display:flex;flex-direction:column;gap:11px}
+.cot-card{padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.cot-ic{width:44px;height:44px;border-radius:12px;background:var(--ouro-bg);color:var(--ouro);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.cot-info{flex:1;min-width:150px}
+.cot-forn{font-weight:700;font-size:15.5px}
+.cot-meta{font-size:12.5px;color:var(--tinta-2);margin-top:2px}
+.cot-dir{display:flex;align-items:center;gap:14px}
+textarea{width:100%;min-height:140px;padding:14px;border:1.5px solid var(--linha);border-radius:13px;resize:vertical;font-size:14px}
+textarea:focus{outline:none;border-color:var(--ouro)}
+
+/* ---------- Revisão IA ---------- */
+.rev-item{padding:15px 17px;border:1.5px solid var(--linha);border-radius:13px;margin-bottom:10px;background:#fff}
+.rev-item.ok{border-color:var(--ok)}
+.rev-item.warn{border-color:var(--ouro)}
+.rev-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.rev-nome{font-weight:700}
+.rev-meta{font-size:12.5px;color:var(--tinta-2);margin-top:4px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.rev-match{display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap}
+.rev-match select{padding:8px 11px;border:1.5px solid var(--linha);border-radius:9px;min-width:220px;font-size:13.5px}
+
+/* ---------- Tabelas ---------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:12px 16px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-2);border-bottom:1.5px solid var(--linha);font-weight:700}
+td{padding:12px 16px;border-bottom:1px solid var(--linha);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:.12s}
+tbody tr:hover td{background:#FBFAF6}
+tr.clicavel{cursor:pointer}
+.t-wrap{overflow-x:auto;border-radius:var(--r)}
+
+/* ---------- Histórico ---------- */
+.chart-wrap{padding:20px 22px}
+.chart-wrap svg{width:100%;height:auto;display:block}
+.legenda{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:13px}
+.legenda span{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+.legenda i{width:14px;height:3.5px;border-radius:2px;display:inline-block}
+.alerta-preco{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--linha);flex-wrap:wrap;cursor:pointer;transition:.12s}
+.alerta-preco:hover{background:#FBFAF6}
+.alerta-preco:last-child{border-bottom:none}
+
+/* ---------- Score fornecedores ---------- */
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px;margin-bottom:8px}
+.score-mini{padding:20px;display:flex;align-items:center;gap:15px}
+.score-anel{width:62px;height:62px;flex-shrink:0;position:relative}
+.score-anel svg{transform:rotate(-90deg);display:block}
+.score-anel b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+.comp{font-size:12px;margin-bottom:9px}
+.comp .cl{display:flex;justify-content:space-between;color:var(--tinta-2);font-weight:600;margin-bottom:4px}
+.comp .cb{height:6px;background:#EFEDE6;border-radius:99px;overflow:hidden}
+.comp .cb i{display:block;height:100%;border-radius:99px}
+
+/* ---------- Carrinho ---------- */
+.cart-group{margin-bottom:22px;overflow:hidden}
+.cart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 20px;background:#FBFAF6;border-bottom:1.5px solid var(--linha);flex-wrap:wrap}
+.cart-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid var(--linha)}
+.cart-item:last-child{border-bottom:none}
+.qtd-ctrl{display:flex;align-items:center;gap:6px}
+.qtd-ctrl button{width:28px;height:28px;border-radius:9px;background:#EFEDE6;font-weight:700;font-size:15px;color:var(--verde)}
+.qtd-ctrl input{width:44px;text-align:center;padding:5px;border:1.5px solid var(--linha);border-radius:8px}
+.cart-total{display:flex;justify-content:flex-end;gap:26px;padding:15px 20px;font-weight:700;background:#FBFAF6}
+.economia-box{background:linear-gradient(135deg,var(--verde-3),var(--verde-2));color:#fff;border-radius:var(--r);padding:24px 26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:22px;position:relative;overflow:hidden}
+.economia-box::after{content:'';position:absolute;right:-40px;top:-40px;width:190px;height:190px;border-radius:99px;background:rgba(169,129,66,.16)}
+.economia-box .n{font-family:'Fraunces',serif;font-size:30px;font-weight:600}
+.economia-box .l{font-size:13px;opacity:.75}
+
+/* ---------- Modais ---------- */
+.overlay{position:fixed;inset:0;background:rgba(12,43,33,.5);backdrop-filter:blur(3px);z-index:120;display:none;align-items:flex-start;justify-content:center;padding:34px 16px;overflow-y:auto}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:20px;max-width:620px;width:100%;padding:28px;box-shadow:var(--sombra-2);animation:modalIn .22s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.modal h2{font-family:'Fraunces',serif;font-size:21px;margin-bottom:4px;font-weight:600}
+.modal .m-sub{color:var(--tinta-2);font-size:13px;margin-bottom:18px}
+.form-g{margin-bottom:14px}
+.form-g label{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2);margin-bottom:6px}
+.form-g input,.form-g select{width:100%;padding:11px 13px;border:1.5px solid var(--linha);border-radius:11px;font-size:14.5px}
+.form-g input:focus,.form-g select:focus{outline:none;border-color:var(--ouro)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.modal-acoes{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;flex-wrap:wrap}
+.drop-mini{border:2px dashed var(--linha-2);border-radius:14px;padding:30px 18px;text-align:center;cursor:pointer;transition:.2s;font-size:13.5px;color:var(--tinta-2)}
+.drop-mini:hover,.drop-mini.over{border-color:var(--ouro);background:var(--ouro-bg)}
+.drop-mini b{display:block;font-family:'Fraunces',serif;font-size:15.5px;color:var(--tinta);margin-bottom:4px;font-weight:600}
+
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--verde-3);color:#fff;
+  padding:13px 24px;border-radius:13px;font-weight:600;font-size:14px;z-index:290;transition:.3s;opacity:0;max-width:90vw;text-align:center}
+#toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ---------- Responsivo ---------- */
+@media(max-width:760px){
+  .head-in{flex-wrap:wrap;height:auto;padding:11px 16px;gap:9px}
+  header .marca-tag{display:none}
+  nav{order:3;width:100%;margin:0 -16px;padding:0 16px}
+  main{padding:22px 16px 100px}
+  h1{font-size:23px}
+  .acoes-topo{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .prod{padding:15px}
+  .prod-nome{font-size:14.5px}
+  .prod-preco{font-size:16px}
+  .cot-dir{width:100%;justify-content:space-between}
+  .modal{padding:22px 18px;border-radius:18px}
+  .overlay{padding:18px 10px}
+  .cart-head,.cart-item,.cart-total{padding-left:15px;padding-right:15px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SÍMBOLO DA MARCA (reuso via <use>) ============ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="floema-simbolo">
+      <rect x="7" y="7" width="86" height="86" rx="24" fill="none" stroke="currentColor" stroke-width="12"/>
+      <rect x="33" y="30" width="12" height="41" rx="6" fill="currentColor"/>
+      <rect x="33" y="30" width="36" height="11" rx="5.5" fill="currentColor"/>
+      <rect x="33" y="48" width="31" height="11" rx="5.5" fill="currentColor"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="login-card">
+    <div class="marca">
+      <svg class="marca-simbolo" width="64" height="64" viewBox="0 0 100 100" style="color:var(--ouro)"><use href="#floema-simbolo"/></svg>
+      <div class="marca-texto">
+        <span class="marca-nome">FLOEMA</span>
+        <span class="marca-tag">Manipulação</span>
+      </div>
+    </div>
+    <p class="login-sub">Sistema de análise de cotações.<br>Informe a senha de acesso da equipe.</p>
+    <input type="password" id="senhaInput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()">
+    <div class="login-erro" id="loginErro"></div>
+    <button class="login-btn" onclick="entrar()">Entrar</button>
+    <div class="login-rodape">Floema Compara · Agência Ângelo</div>
+  </div>
+</div>
+
+<!-- ============ LOADER COM PROGRESSO ============ -->
+<div id="loader">
+  <div class="loader-box">
+    <svg class="marca-simbolo" width="46" height="46" viewBox="0 0 100 100" style="color:var(--ouro)"><use href="#floema-simbolo"/></svg>
+    <div class="loader-msg" id="loaderMsg">Carregando…</div>
+    <div class="loader-barra"><i id="loaderBarra"></i></div>
+    <div class="loader-pct" id="loaderPct">0%</div>
+  </div>
+</div>
+
+<header id="appHeader" style="display:none">
+  <div class="head-in">
+    <div class="marca">
+      <svg class="marca-simbolo" width="34" height="34" viewBox="0 0 100 100" style="color:var(--ouro-2)"><use href="#floema-simbolo"/></svg>
+      <div class="marca-texto">
+        <span class="marca-nome">FLOEMA</span>
+        <span class="marca-tag">Compara</span>
+      </div>
+    </div>
+    <nav id="nav">
+      <button class="tab on" data-p="cotacoes">Cotações</button>
+      <button class="tab" data-p="comparativo">Comparativo</button>
+      <button class="tab" data-p="historico">Histórico</button>
+      <button class="tab" data-p="insumos">Insumos</button>
+      <button class="tab" data-p="fornecedores">Fornecedores</button>
+    </nav>
+    <button class="cart-btn" onclick="go('carrinho')">Lista <span class="cart-badge" id="cartCount">0</span></button>
+    <button class="sair-btn" onclick="sair()" title="Sair">Sair</button>
+  </div>
+</header>
+
+<main id="appMain" style="display:none">
+
+<!-- ============ PÁGINA: COTAÇÕES (inicial) ============ -->
+<section class="page on" id="p-cotacoes">
+  <div class="olho">Rodada de compras</div>
+  <h1>Cotações</h1>
+  <p class="sub">Envie o PDF do fornecedor ou cole o texto do e-mail. A IA lê, casa os itens com o catálogo e você só confirma.</p>
+
+  <div class="acoes-topo">
+    <div class="acao-card" onclick="document.getElementById('filePdf').click()" id="dropCot">
+      <div class="ic">📄</div>
+      <b>Enviar PDF da cotação</b>
+      <p>Arraste aqui ou clique para escolher — Florien, Nutrifarm, Fagron…</p>
+      <input type="file" id="filePdf" accept="application/pdf" hidden onchange="onPdf(this.files[0])">
+    </div>
+    <div class="acao-card" onclick="abrirModal('mTexto')">
+      <div class="ic">✉️</div>
+      <b>Colar texto do e-mail</b>
+      <p>Recebeu a cotação no corpo do e-mail ou WhatsApp? Cole o texto.</p>
+    </div>
+  </div>
+
+  <div id="revisao" style="display:none;margin-top:28px">
+    <div class="olho">Leitura da IA</div>
+    <h1 style="font-size:22px">Confirmação</h1>
+    <p class="sub">Itens em <b style="color:var(--ouro)">dourado</b> precisam da sua confirmação de vínculo com o catálogo. Cada preço já é comparado com a memória do fornecedor.</p>
+    <div class="panel" style="padding:18px;margin-bottom:14px">
+      <div class="form-row">
+        <div class="form-g"><label>Fornecedor</label><input id="revForn" oninput="renderRevisao()"></div>
+        <div class="form-g"><label>Nº da cotação</label><input id="revNum"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-g"><label>Data</label><input id="revData" type="date"></div>
+        <div class="form-g"><label>Válida até</label><input id="revValida" type="date"></div>
+      </div>
+    </div>
+    <div id="revItens"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-s" onclick="cancelarRevisao()">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarCotacao()">Confirmar e salvar</button>
+    </div>
+  </div>
+
+  <div class="secao">Histórico de cotações</div>
+  <div class="cot-lista" id="listaCotacoes"></div>
+</section>
+
+<!-- ============ PÁGINA: COMPARATIVO ============ -->
+<section class="page" id="p-comparativo">
+  <div class="olho">Ranking de preços</div>
+  <h1>Comparativo</h1>
+  <p class="sub">Preços normalizados por grama, ml ou milheiro. Toque em um insumo para ver todas as ofertas, tendências e adicionar à lista.</p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel filtros">
+    <div class="f-grupo busca">
+      <label>Buscar insumo</label>
+      <input type="text" id="fBusca" placeholder="minoxidil, cápsula 0, vitamina…" oninput="renderComparativo()">
+    </div>
+    <div class="f-grupo">
+      <label>Ordenar por</label>
+      <select id="fCriterio" onchange="renderComparativo()">
+        <option value="preco">Menor preço</option>
+        <option value="validade">Maior validade</option>
+        <option value="score">Score inteligente</option>
+      </select>
+    </div>
+    <div class="f-grupo">
+      <label>Procedência</label>
+      <select id="fProc" onchange="renderComparativo()"><option value="">Todas</option></select>
+    </div>
+    <div class="f-grupo">
+      <label>Fornecedor</label>
+      <select id="fForn" onchange="renderComparativo()"><option value="">Todos</option></select>
+    </div>
+    <div class="f-grupo" style="max-width:120px">
+      <label>Val. mín. (m)</label>
+      <input type="number" id="fValMin" min="0" value="0" onchange="renderComparativo()">
+    </div>
+    <label class="switch-row"><input type="checkbox" id="fVigentes" onchange="renderComparativo()"><span class="switch"></span>Vigentes</label>
+    <label class="switch-row"><input type="checkbox" id="fUnico" onchange="renderComparativo()"><span class="switch"></span>Forn. único</label>
+  </div>
+
+  <div id="comparativoGrid" class="grid"></div>
+  <div id="fornUnico" style="display:none;flex-direction:column;gap:12px"></div>
+</section>
+
+<!-- ============ PÁGINA: HISTÓRICO ============ -->
+<section class="page" id="p-historico">
+  <div class="olho">Memória de preços</div>
+  <h1>Histórico</h1>
+  <p class="sub">A variação de cada insumo em cada fornecedor ao longo de todas as cotações. É esta memória que alimenta o score.</p>
+
+  <div class="panel" style="margin-bottom:20px;overflow:hidden">
+    <div class="cart-head"><b>Alertas desta rodada</b><span style="font-size:13px;color:var(--tinta-2)" id="alertasResumo"></span></div>
+    <div id="alertasPreco"></div>
+  </div>
+
+  <div class="panel filtros">
+    <div class="f-grupo busca">
+      <label>Insumo</label>
+      <select id="hInsumo" onchange="renderHistoricoInsumo()" style="width:100%;padding:10px 13px;border:1.5px solid var(--linha);border-radius:11px;background:#fff"></select>
+    </div>
+    <div class="f-grupo">
+      <label>Período</label>
+      <select id="hPeriodo" onchange="renderHistoricoInsumo()">
+        <option value="0">Todo o histórico</option>
+        <option value="3">Últimos 3 meses</option>
+        <option value="6">Últimos 6 meses</option>
+        <option value="12">Últimos 12 meses</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="panel chart-wrap" id="hChart" style="margin-bottom:18px"></div>
+  <div class="panel t-wrap" style="margin-bottom:8px">
+    <table>
+      <thead><tr><th>Fornecedor</th><th>Cotações</th><th>Primeiro</th><th>Atual</th><th>Variação</th><th>Média</th><th>Mín / Máx</th><th>Volatilidade</th></tr></thead>
+      <tbody id="hTabela"></tbody>
+    </table>
+  </div>
+
+  <div class="secao">Insumos que mais subiram</div>
+  <p class="sub" style="margin-top:-8px">Preço atual vs. média histórica do próprio fornecedor — a pauta de renegociação.</p>
+  <div class="panel t-wrap">
+    <table>
+      <thead><tr><th>Insumo</th><th>Fornecedor</th><th>Média</th><th>Atual</th><th>Variação</th><th>Registro</th></tr></thead>
+      <tbody id="hRanking"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ PÁGINA: INSUMOS ============ -->
+<section class="page" id="p-insumos">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="olho">Catálogo</div>
+      <h1>Insumos</h1>
+      <p class="sub">Base usada pela IA para reconhecer os itens das cotações. Sinônimos melhoram o matching.</p>
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn btn-o" onclick="abrirModal('mImporta')">⇪ Importar em massa</button>
+      <button class="btn btn-p" onclick="abrirInsumo()">+ Novo insumo</button>
+    </div>
+  </div>
+  <div class="panel filtros" style="margin-bottom:14px">
+    <div class="f-grupo busca"><label>Buscar</label><input type="text" id="iBusca" placeholder="Nome, código ou sinônimo…" oninput="renderInsumos()"></div>
+    <div class="f-grupo"><label>Categoria</label><select id="iCat" onchange="renderInsumos()"><option value="">Todas</option></select></div>
+  </div>
+  <div class="panel t-wrap">
+    <table>
+      <thead><tr><th>Insumo</th><th>Categoria</th><th>Un.</th><th>Ofertas</th><th></th></tr></thead>
+      <tbody id="tbInsumos"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ PÁGINA: FORNECEDORES ============ -->
+<section class="page" id="p-fornecedores">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="olho">Parceiros</div>
+      <h1>Fornecedores</h1>
+      <p class="sub">Score de 0 a 100 construído sobre o histórico. Toque em um fornecedor para ver os componentes da nota.</p>
+    </div>
+    <button class="btn btn-p" onclick="abrirFornecedor()">+ Novo fornecedor</button>
+  </div>
+  <div class="score-grid" id="scoreGrid"></div>
+  <p class="sub" style="font-size:12px" id="scoreLegenda"></p>
+</section>
+
+<!-- ============ PÁGINA: CARRINHO ============ -->
+<section class="page" id="p-carrinho">
+  <div class="olho">Fechamento</div>
+  <h1>Lista de compras</h1>
+  <p class="sub">Itens agrupados por fornecedor, prontos para virar pedido.</p>
+  <div id="cartContent"></div>
+</section>
+</main>
+
+<!-- ============ MODAIS ============ -->
+<div class="overlay" id="mTexto">
+  <div class="modal">
+    <h2>Colar texto da cotação</h2>
+    <p class="m-sub">Cole o conteúdo do e-mail ou mensagem com os itens e preços.</p>
+    <textarea id="txtCotacao" placeholder="Ex.: Vaselina Sólida 5kg — R$ 131,50 · validade 09/2028…"></textarea>
+    <div class="modal-acoes">
+      <button class="btn btn-s" onclick="fecharModal('mTexto')">Cancelar</button>
+      <button class="btn btn-p" onclick="parseTexto()">Analisar com IA</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="mDetalhe"><div class="modal" id="mDetalheBody"></div></div>
+
+<div class="overlay" id="mInsumo">
+  <div class="modal">
+    <h2 id="mInsumoTitulo">Novo insumo</h2>
+    <p class="m-sub">Código e nome são obrigatórios. Sinônimos ajudam a IA a reconhecer variações de escrita.</p>
+    <div class="form-row">
+      <div class="form-g"><label>Código</label><input id="inCodigo"></div>
+      <div class="form-g"><label>Unidade base</label>
+        <select id="inUnidade"><option value="g">grama (g)</option><option value="ml">mililitro (ml)</option><option value="mil">milheiro (cápsulas)</option><option value="un">unidade</option></select>
+      </div>
+    </div>
+    <div class="form-g"><label>Nome</label><input id="inNome"></div>
+    <div class="form-row">
+      <div class="form-g"><label>Categoria</label><input id="inCat" placeholder="Ativo, Cápsula, Tintura…"></div>
+      <div class="form-g"><label>Ativo?</label><select id="inAtivo"><option>SIM</option><option>NAO</option></select></div>
+    </div>
+    <div class="form-g"><label>Sinônimos (separados por ;)</label><input id="inSin" placeholder="dexpanthenol;pantenol"></div>
+    <div class="form-g"><label>Observação</label><input id="inObs"></div>
+    <div class="modal-acoes">
+      <button class="btn btn-s" onclick="fecharModal('mInsumo')">Cancelar</button>
+      <button class="btn btn-p" onclick="gravarInsumo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="mImporta">
+  <div class="modal">
+    <h2>Importar insumos em massa</h2>
+    <p class="m-sub">Envie um PDF ou uma foto da lista de insumos — como a lista de cotação do Fórmula Certa. A IA extrai código, nome e unidade para você revisar antes de salvar.</p>
+    <div class="drop-mini" id="dropInsumos" onclick="document.getElementById('fileInsumos').click()">
+      <b>Arraste o PDF ou imagem aqui</b>
+      ou clique para escolher o arquivo
+      <input type="file" id="fileInsumos" accept="application/pdf,image/*" hidden onchange="onArquivoInsumos(this.files[0])">
+    </div>
+    <div id="importaRevisao" style="display:none;margin-top:16px">
+      <p style="font-size:13px;font-weight:600;margin-bottom:10px">Revise antes de salvar — desmarque o que não quiser importar. Itens já existentes no catálogo aparecem marcados.</p>
+      <div class="t-wrap" style="max-height:340px;overflow-y:auto;border:1px solid var(--linha);border-radius:12px">
+        <table><thead><tr><th></th><th>Código</th><th>Nome</th><th>Un.</th><th>Categoria</th></tr></thead><tbody id="tbImporta"></tbody></table>
+      </div>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn btn-s" onclick="fecharModal('mImporta');resetImporta()">Cancelar</button>
+      <button class="btn btn-p" id="btnImporta" style="display:none" onclick="salvarImportacao()">Salvar selecionados</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="mForn">
+  <div class="modal">
+    <h2 id="mFornTitulo">Novo fornecedor</h2>
+    <p class="m-sub">Prazo e pedido mínimo entram no modo fornecedor único e nos avisos da lista de compras.</p>
+    <input type="hidden" id="fnId">
+    <div class="form-g"><label>Nome</label><input id="fnNome"></div>
+    <div class="form-row">
+      <div class="form-g"><label>Vendedor</label><input id="fnVend"></div>
+      <div class="form-g"><label>Telefone</label><input id="fnTel"></div>
+    </div>
+    <div class="form-g"><label>E-mail</label><input id="fnEmail"></div>
+    <div class="form-row">
+      <div class="form-g"><label>Prazo de entrega (dias)</label><input id="fnPrazo" type="number" min="0"></div>
+      <div class="form-g"><label>Pedido mínimo (R$)</label><input id="fnMin" type="number" min="0"></div>
+    </div>
+    <div class="form-g"><label>Observação</label><input id="fnObs"></div>
+    <div class="modal-acoes">
+      <button class="btn btn-s" onclick="fecharModal('mForn')">Cancelar</button>
+      <button class="btn btn-p" onclick="gravarFornecedor()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+ * CONFIGURAÇÃO — cole a URL do App da Web do Apps Script
+ * ============================================================ */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbzblH7Ib3Ay7utracY3E8y_cNoZI3hJRTbxMY5X6dHUwMtn0-ZT8qucWA4GkbBHPDjjhg/exec' // ex.: 'https://script.google.com/macros/s/AKfycb…/exec'
+};
+
+/* ============================================================
+ * ESTADO
+ * ============================================================ */
+let DB = { insumos: [], fornecedores: [], cotacoes: [], itens: [], pedidos: [] };
+let CART = JSON.parse(localStorage.getItem('floemaCart') || '[]');
+let TOKEN = localStorage.getItem('floemaToken') || '';
+let REVISAO = null;
+let IMPORTA = null;
+
+const fmt = n => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtU = n => { n = Number(n || 0); const d = n < 0.01 ? 4 : n < 1 ? 3 : 2; return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }); };
+const hoje = () => new Date().toISOString().slice(0, 10);
+const mesesAte = d => { if (!d) return 0; const t = new Date(d).getTime(); return isNaN(t) ? 0 : Math.max(0, Math.round((t - Date.now()) / 2629800000)); };
+const dataBR = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '—';
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const unLabel = u => ({ g: 'g', ml: 'ml', mil: 'milheiro', un: 'un' }[u] || u);
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 3200);
+}
+function abrirModal(id) { document.getElementById(id).classList.add('on'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('on'); }
+
+/* ============================================================
+ * LOADER COM PORCENTAGEM
+ * Progride sozinho até um teto e completa quando a tarefa termina.
+ * marcos: pontos de progresso reais informados pelo fluxo.
+ * ============================================================ */
+const Loader = {
+  pct: 0, teto: 90, timer: null,
+  abrir(msg) {
+    this.pct = 0; this.teto = 88;
+    document.getElementById('loaderMsg').textContent = msg || 'Carregando…';
+    document.getElementById('loader').classList.add('on');
+    this._pinta();
+    clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      const passo = this.pct < 35 ? 3.2 : this.pct < 65 ? 1.6 : 0.5;
+      this.pct = Math.min(this.teto, this.pct + passo * (0.6 + Math.random() * 0.8));
+      this._pinta();
+    }, 220);
+  },
+  marco(pct, msg) {
+    if (msg) document.getElementById('loaderMsg').textContent = msg;
+    this.pct = Math.max(this.pct, pct); this.teto = Math.max(this.teto, Math.min(96, pct + 20));
+    this._pinta();
+  },
+  fechar() {
+    clearInterval(this.timer);
+    this.pct = 100; this._pinta();
+    setTimeout(() => { document.getElementById('loader').classList.remove('on'); }, 320);
+  },
+  erro() { clearInterval(this.timer); document.getElementById('loader').classList.remove('on'); },
+  _pinta() {
+    document.getElementById('loaderBarra').style.width = this.pct + '%';
+    document.getElementById('loaderPct').textContent = Math.round(this.pct) + '%';
+  }
+};
+
+/* ============================================================
+ * API — token em toda requisição, text/plain evita preflight
+ * ============================================================ */
+async function api(action, payload) {
+  if (!CONFIG.API_URL) throw new Error('Configure CONFIG.API_URL no início do arquivo com a URL do Apps Script.');
+  const res = await fetch(CONFIG.API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action, token: TOKEN }, payload || {}))
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    if (data.auth === false) { sair(true); throw new Error('Sessão expirada — entre novamente.'); }
+    throw new Error(data.error || 'Erro na API');
+  }
+  return data;
+}
+
+/* ============================================================
+ * AUTENTICAÇÃO
+ * ============================================================ */
+async function entrar() {
+  const senha = document.getElementById('senhaInput').value;
+  const erroEl = document.getElementById('loginErro');
+  erroEl.textContent = '';
+  if (!senha) { erroEl.textContent = 'Digite a senha.'; return; }
+  Loader.abrir('Verificando acesso…');
+  try {
+    const res = await api('login', { senha });
+    TOKEN = res.token;
+    localStorage.setItem('floemaToken', TOKEN);
+    Loader.marco(40, 'Acesso liberado — carregando dados…');
+    await carregar(true);
+    mostrarApp();
+    Loader.fechar();
+  } catch (e) {
+    Loader.erro();
+    erroEl.textContent = e.message.includes('API_URL') ? e.message : 'Senha incorreta. Tente novamente.';
+  }
+}
+
+function mostrarApp() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('appHeader').style.display = '';
+  document.getElementById('appMain').style.display = '';
+}
+
+function sair(silencioso) {
+  TOKEN = '';
+  localStorage.removeItem('floemaToken');
+  document.getElementById('appHeader').style.display = 'none';
+  document.getElementById('appMain').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('senhaInput').value = '';
+  if (!silencioso) toast('Sessão encerrada.');
+}
+
+/* ============================================================
+ * NAVEGAÇÃO E CARGA
+ * ============================================================ */
+function go(p) {
+  document.querySelectorAll('.page').forEach(s => s.classList.remove('on'));
+  document.getElementById('p-' + p).classList.add('on');
+  document.querySelectorAll('#nav .tab').forEach(t => t.classList.toggle('on', t.dataset.p === p));
+  if (p === 'carrinho') renderCart();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('#nav .tab').forEach(t => t.onclick = () => go(t.dataset.p));
+
+async function carregar(dentroDeFluxo) {
+  if (!dentroDeFluxo) Loader.abrir('Sincronizando com a planilha…');
+  try {
+    const data = await api('getAll');
+    if (!dentroDeFluxo) Loader.marco(70, 'Montando as telas…');
+    else Loader.marco(78, 'Montando as telas…');
+    DB = data;
+    _memoria = null;
+    popularFiltros();
+    renderCotacoes(); renderComparativo(); renderHistorico(); renderInsumos(); renderScores(); atualizarCartBadge();
+    if (!dentroDeFluxo) Loader.fechar();
+  } catch (e) {
+    Loader.erro();
+    toast('Erro ao carregar: ' + e.message);
+    throw e;
+  }
+}
+
+function popularFiltros() {
+  const procs = [...new Set(DB.itens.map(i => i.procedencia).filter(Boolean))].sort();
+  document.getElementById('fProc').innerHTML = '<option value="">Todas</option>' + procs.map(p => `<option>${esc(p)}</option>`).join('');
+  const forns = [...new Set(DB.itens.map(i => i.fornecedor_nome).filter(Boolean))].sort();
+  document.getElementById('fForn').innerHTML = '<option value="">Todos</option>' + forns.map(f => `<option>${esc(f)}</option>`).join('');
+  const cats = [...new Set(DB.insumos.map(i => i.categoria).filter(Boolean))].sort();
+  document.getElementById('iCat').innerHTML = '<option value="">Todas</option>' + cats.map(c => `<option>${esc(c)}</option>`).join('');
+}
+
+/* ============================================================
+ * MOTOR — memória de preços, ranking, score
+ * ============================================================ */
+function cotacaoDe(cotId) { return DB.cotacoes.find(x => x.id === cotId) || {}; }
+function dataCotacao(cotId) { return String(cotacaoDe(cotId).data_cotacao || ''); }
+function cotacaoVigente(cotId) {
+  const c = cotacaoDe(cotId);
+  return c.valida_ate ? String(c.valida_ate) >= hoje() : true;
+}
+
+function apenasMaisRecentes(itens) {
+  const map = {};
+  itens.forEach(i => {
+    const k = i.insumo_codigo + '||' + i.fornecedor_nome;
+    if (!map[k] || dataCotacao(i.cotacao_id) > dataCotacao(map[k].cotacao_id)) map[k] = i;
+  });
+  return Object.values(map);
+}
+
+function ofertasFiltradas() {
+  const proc = document.getElementById('fProc').value;
+  const forn = document.getElementById('fForn').value;
+  const valMin = Number(document.getElementById('fValMin').value || 0);
+  const soVigentes = document.getElementById('fVigentes').checked;
+  const ativos = DB.itens.filter(i => cotacaoDe(i.cotacao_id).status !== 'arquivada');
+  return apenasMaisRecentes(ativos).filter(i => {
+    if (!i.insumo_codigo) return false;
+    if (proc && i.procedencia !== proc) return false;
+    if (forn && i.fornecedor_nome !== forn) return false;
+    if (valMin && mesesAte(i.validade_lote) < valMin) return false;
+    if (soVigentes && !cotacaoVigente(i.cotacao_id)) return false;
+    return Number(i.preco_unitario_base) > 0;
+  });
+}
+
+const PROC_SCORE = { 'brasil': 1, 'frança': .85, 'franca': .85, 'eua': .85, 'alemanha': .85, 'índia': .7, 'india': .7, 'china': .6 };
+
+function rankearOfertas(ofertas, criterio) {
+  if (!ofertas.length) return [];
+  const minP = Math.min(...ofertas.map(o => o.preco_unitario_base));
+  const maxM = Math.max(...ofertas.map(o => mesesAte(o.validade_lote)), 1);
+  ofertas.forEach(o => {
+    const sPreco = minP / o.preco_unitario_base;
+    const sVal = mesesAte(o.validade_lote) / maxM;
+    const sProc = PROC_SCORE[norm(o.procedencia)] ?? .75;
+    o._score = 0.6 * sPreco + 0.25 * sVal + 0.15 * sProc;
+    o._difPct = ((o.preco_unitario_base - minP) / minP) * 100;
+  });
+  const sorters = {
+    preco: (a, b) => a.preco_unitario_base - b.preco_unitario_base,
+    validade: (a, b) => mesesAte(b.validade_lote) - mesesAte(a.validade_lote),
+    score: (a, b) => b._score - a._score
+  };
+  return ofertas.slice().sort(sorters[criterio] || sorters.preco);
+}
+
+function agruparPorInsumo(ofertas) {
+  const map = {};
+  ofertas.forEach(o => { (map[o.insumo_codigo] = map[o.insumo_codigo] || []).push(o); });
+  return map;
+}
+
+/* ---- memória de preços ---- */
+function serieHistorica(codigo, fornecedor) {
+  return DB.itens
+    .filter(i => String(i.insumo_codigo) === String(codigo) && i.fornecedor_nome === fornecedor
+      && Number(i.preco_unitario_base) > 0 && dataCotacao(i.cotacao_id))
+    .map(i => ({ data: dataCotacao(i.cotacao_id), preco: Number(i.preco_unitario_base), item: i }))
+    .sort((a, b) => a.data.localeCompare(b.data));
+}
+
+function statsSerie(pts) {
+  if (!pts.length) return null;
+  const v = pts.map(p => p.preco);
+  const media = v.reduce((s, x) => s + x, 0) / v.length;
+  const dp = Math.sqrt(v.reduce((s, x) => s + Math.pow(x - media, 2), 0) / v.length);
+  const primeiro = v[0], atual = v[v.length - 1], anterior = v.length > 1 ? v[v.length - 2] : null;
+  return {
+    n: v.length, primeiro, atual, anterior, media,
+    min: Math.min(...v), max: Math.max(...v),
+    cv: media > 0 ? dp / media : 0,
+    varTotal: primeiro > 0 ? (atual / primeiro - 1) * 100 : 0,
+    varUltima: anterior ? (atual / anterior - 1) * 100 : null,
+    vsMedia: media > 0 ? (atual / media - 1) * 100 : 0,
+    dataAtual: pts[pts.length - 1].data, dataPrimeiro: pts[0].data
+  };
+}
+
+let _memoria = null;
+function memoria() {
+  if (_memoria) return _memoria;
+  const m = {};
+  DB.itens.forEach(i => {
+    if (!i.insumo_codigo) return;
+    const k = i.insumo_codigo + '||' + i.fornecedor_nome;
+    if (m[k]) return;
+    m[k] = statsSerie(serieHistorica(i.insumo_codigo, i.fornecedor_nome));
+  });
+  return (_memoria = m);
+}
+function memoriaDe(o) { return memoria()[o.insumo_codigo + '||' + o.fornecedor_nome] || null; }
+
+function seloTendencia(o) {
+  const s = memoriaDe(o);
+  if (!s || s.n < 2) return '<span class="trend t-igual">1ª cotação</span>';
+  const d = s.vsMedia;
+  if (d > 3) return `<span class="trend t-sobe">↑ ${d.toFixed(0)}% vs média</span>`;
+  if (d < -3) return `<span class="trend t-cai">↓ ${Math.abs(d).toFixed(0)}% vs média</span>`;
+  return '<span class="trend t-igual">≈ na média</span>';
+}
+
+function alertasPreco(limite) {
+  limite = limite === undefined ? 8 : limite;
+  return apenasMaisRecentes(DB.itens)
+    .filter(i => i.insumo_codigo)
+    .map(i => ({ item: i, st: memoriaDe(i) }))
+    .filter(x => x.st && x.st.n >= 2 && x.st.vsMedia > limite)
+    .sort((a, b) => b.st.vsMedia - a.st.vsMedia);
+}
+
+/* ---- score do fornecedor ---- */
+const PESOS = { competitividade: 35, estabilidade: 20, tendencia: 15, cobertura: 15, frequencia: 10, validade: 5 };
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+function scoresFornecedores() {
+  const recentes = apenasMaisRecentes(DB.itens.filter(i => cotacaoDe(i.cotacao_id).status !== 'arquivada'))
+    .filter(i => i.insumo_codigo && Number(i.preco_unitario_base) > 0);
+  if (!recentes.length) return [];
+  const melhorMercado = {};
+  recentes.forEach(i => {
+    const p = Number(i.preco_unitario_base);
+    if (!melhorMercado[i.insumo_codigo] || p < melhorMercado[i.insumo_codigo]) melhorMercado[i.insumo_codigo] = p;
+  });
+  const universo = Object.keys(melhorMercado).length;
+  const nomes = [...new Set(recentes.map(i => i.fornecedor_nome))];
+  const maxCot = Math.max(...nomes.map(n => DB.cotacoes.filter(c => c.fornecedor_nome === n).length), 1);
+
+  return nomes.map(nome => {
+    const meus = recentes.filter(i => i.fornecedor_nome === nome);
+    const hist = meus.map(i => memoriaDe(i)).filter(s => s && s.n >= 2);
+    const competitividade = meus.reduce((s, i) => s + melhorMercado[i.insumo_codigo] / Number(i.preco_unitario_base), 0) / meus.length;
+    const cvMedio = hist.length ? hist.reduce((s, x) => s + x.cv, 0) / hist.length : null;
+    const estabilidade = cvMedio === null ? 0.6 : clamp(1 - cvMedio / 0.2, 0, 1);
+    const varMedia = hist.length ? hist.reduce((s, x) => s + x.varTotal, 0) / hist.length : null;
+    const tendencia = varMedia === null ? 0.6 : clamp((15 - varMedia) / 25, 0, 1);
+    const cobertura = clamp(meus.length / universo, 0, 1);
+    const frequencia = clamp(DB.cotacoes.filter(c => c.fornecedor_nome === nome).length / maxCot, 0, 1);
+    const validade = clamp(meus.reduce((s, i) => s + mesesAte(i.validade_lote), 0) / meus.length / 36, 0, 1);
+    const comp = { competitividade, estabilidade, tendencia, cobertura, frequencia, validade };
+    const total = Object.entries(PESOS).reduce((s, [k, p]) => s + comp[k] * p, 0);
+    const vitorias = meus.filter(i => Number(i.preco_unitario_base) <= melhorMercado[i.insumo_codigo] * 1.0001).length;
+    return {
+      nome, total: Math.round(total), comp, itens: meus.length, universo, vitorias,
+      cotacoes: DB.cotacoes.filter(c => c.fornecedor_nome === nome).length,
+      comHist: hist.length, premioMedio: (1 / competitividade - 1) * 100
+    };
+  }).sort((a, b) => b.total - a.total);
+}
+
+const FAIXAS = [
+  { min: 80, nome: 'Preferencial', cor: 'var(--ok)', chip: 'chip-ok' },
+  { min: 65, nome: 'Confiável', cor: 'var(--azul)', chip: 'chip-azul' },
+  { min: 50, nome: 'Regular', cor: 'var(--ouro)', chip: 'chip-ouro' },
+  { min: 0, nome: 'Atenção', cor: 'var(--alerta)', chip: 'chip-alerta' }
+];
+const faixaDe = n => FAIXAS.find(f => n >= f.min);
+const LABEL_COMP = {
+  competitividade: 'Competitividade', estabilidade: 'Estabilidade', tendencia: 'Tendência',
+  cobertura: 'Cobertura da lista', frequencia: 'Frequência', validade: 'Validade dos lotes'
+};
+
+/* ============================================================
+ * RENDER: COTAÇÕES (página inicial)
+ * ============================================================ */
+function renderCotacoes() {
+  const el = document.getElementById('listaCotacoes');
+  if (!DB.cotacoes.length) {
+    el.innerHTML = `<div class="panel vazio">
+      <div class="olho">Comece por aqui</div>
+      <b>Nenhuma cotação registrada</b>
+      <p>Envie o primeiro PDF de um fornecedor ou cole o texto do e-mail. A IA extrai os itens e o comparativo nasce sozinho.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = DB.cotacoes.slice().sort((a, b) => String(b.data_cotacao).localeCompare(String(a.data_cotacao))).map(c => {
+    const vigente = !c.valida_ate || String(c.valida_ate) >= hoje();
+    const arquivada = c.status === 'arquivada';
+    return `<div class="panel cot-card clique" onclick="detalheCotacao('${esc(c.id)}')">
+      <div class="cot-ic">📄</div>
+      <div class="cot-info">
+        <div class="cot-forn">${esc(c.fornecedor_nome)}</div>
+        <div class="cot-meta">${esc(c.numero_cotacao || c.id)} · ${dataBR(c.data_cotacao)} · ${c.total_itens} itens</div>
+      </div>
+      <div class="cot-dir">
+        ${arquivada ? '<span class="chip chip-cinza">arquivada</span>' : vigente ? `<span class="chip chip-ok">vigente até ${dataBR(c.valida_ate)}</span>` : '<span class="chip chip-ouro">vencida</span>'}
+        <span class="prod-abrir">Abrir →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function detalheCotacao(id) {
+  const c = cotacaoDe(id);
+  const itens = DB.itens.filter(i => i.cotacao_id === id);
+  const arquivada = c.status === 'arquivada';
+  document.getElementById('mDetalheBody').innerHTML = `
+    <h2>${esc(c.fornecedor_nome)}</h2>
+    <p class="m-sub">${esc(c.numero_cotacao || id)} · emitida em ${dataBR(c.data_cotacao)} · válida até ${dataBR(c.valida_ate)}</p>
+    <div class="t-wrap" style="max-height:380px;overflow-y:auto;border:1px solid var(--linha);border-radius:12px">
+      <table>
+        <thead><tr><th>Item</th><th>Embalagem</th><th>Preço</th><th>/${'unid.'}</th></tr></thead>
+        <tbody>${itens.map(i => `<tr>
+          <td><b>${esc(i.insumo_nome || i.nome_original)}</b>${i.insumo_codigo ? '' : ' <span class="chip chip-cinza">sem vínculo</span>'}
+            <div style="font-size:11.5px;color:var(--tinta-2)">${esc(i.procedencia || '')} · lote até ${dataBR(i.validade_lote)}</div></td>
+          <td style="white-space:nowrap">${i.qtd_base} ${esc(i.unidade_base)}</td>
+          <td class="mono">${fmt(i.preco_com_impostos)}</td>
+          <td class="mono" style="color:var(--verde)">${fmtU(i.preco_unitario_base)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn btn-d btn-sm" onclick="excluirCotacao('${esc(id)}')">Excluir</button>
+      ${!arquivada ? `<button class="btn btn-s btn-sm" onclick="arquivarCotacao('${esc(id)}')" title="Sai do comparativo, mantém o histórico">Arquivar</button>` : ''}
+      <button class="btn btn-p btn-sm" onclick="fecharModal('mDetalhe')">Fechar</button>
+    </div>`;
+  abrirModal('mDetalhe');
+}
+
+/* ============================================================
+ * RENDER: COMPARATIVO — cards compactos, detalhe no modal
+ * ============================================================ */
+function renderComparativo() {
+  const busca = norm(document.getElementById('fBusca').value);
+  const criterio = document.getElementById('fCriterio').value;
+  const modoUnico = document.getElementById('fUnico').checked;
+  const grid = document.getElementById('comparativoGrid');
+  const fu = document.getElementById('fornUnico');
+  grid.style.display = modoUnico ? 'none' : 'grid';
+  fu.style.display = modoUnico ? 'flex' : 'none';
+
+  const ofertas = ofertasFiltradas();
+  const grupos = agruparPorInsumo(ofertas);
+
+  const totalInsumos = Object.keys(grupos).length;
+  const comConc = Object.values(grupos).filter(g => new Set(g.map(o => o.fornecedor_nome)).size > 1).length;
+  let economia = 0;
+  Object.values(grupos).forEach(g => {
+    if (new Set(g.map(o => o.fornecedor_nome)).size > 1) {
+      const ord = g.slice().sort((a, b) => a.preco_unitario_base - b.preco_unitario_base);
+      economia += (ord[ord.length - 1].preco_unitario_base - ord[0].preco_unitario_base) * ord[0].qtd_base;
+    }
+  });
+  document.getElementById('kpis').innerHTML = `
+    <div class="panel kpi"><div class="n">${totalInsumos}</div><div class="l">Insumos cotados</div></div>
+    <div class="panel kpi"><div class="n">${DB.cotacoes.filter(c => c.status !== 'arquivada').length}</div><div class="l">Cotações ativas</div></div>
+    <div class="panel kpi"><div class="n">${comConc}</div><div class="l">Com concorrência</div></div>
+    <div class="panel kpi"><div class="n" style="color:var(--ouro)">${fmt(economia)}</div><div class="l">Economia potencial</div></div>`;
+
+  if (modoUnico) { renderFornUnico(grupos); return; }
+
+  const lista = Object.keys(grupos)
+    .map(cod => ({
+      cod,
+      insumo: DB.insumos.find(i => String(i.codigo) === String(cod)) || { nome: grupos[cod][0].insumo_nome, categoria: '' },
+      ofertas: rankearOfertas(grupos[cod], criterio)
+    }))
+    .filter(g => !busca || norm(g.insumo.nome + ' ' + g.cod + ' ' + (g.insumo.sinonimos || '')).includes(busca))
+    .sort((a, b) => String(a.insumo.nome).localeCompare(String(b.insumo.nome), 'pt-BR'));
+
+  if (!lista.length) {
+    grid.innerHTML = `<div class="panel vazio" style="grid-column:1/-1">
+      <b>Nada por aqui ainda</b>
+      <p>${DB.itens.length ? 'Nenhum insumo passa nos filtros atuais.' : 'O comparativo é montado a partir das cotações confirmadas.'}</p>
+      ${DB.itens.length ? '' : '<button class="btn btn-p" onclick="go(\'cotacoes\')">Enviar primeira cotação</button>'}
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = lista.map(g => {
+    const top = g.ofertas[0];
+    const nForn = new Set(g.ofertas.map(o => o.fornecedor_nome)).size;
+    const dif = g.ofertas.length > 1 ? g.ofertas[g.ofertas.length - 1]._difPct : 0;
+    return `<div class="panel prod clique" onclick="detalheInsumo('${esc(g.cod)}')">
+      <div class="prod-cat">${esc(g.insumo.categoria || 'Insumo')}</div>
+      <div class="prod-nome">${esc(g.insumo.nome)}</div>
+      <div class="prod-preco">${fmtU(top.preco_unitario_base)}<small> /${unLabel(top.unidade_base)}</small></div>
+      <div class="prod-forn"><span>melhor: <b>${esc(top.fornecedor_nome)}</b></span>${seloTendencia(top)}</div>
+      <div class="prod-rodape">
+        <span class="prod-n">${nForn} fornecedor${nForn > 1 ? 'es' : ''}${dif > 1 ? ` · até +${dif.toFixed(0)}%` : ''}</span>
+        <span class="prod-abrir">Ver ofertas →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function ofertaHTML(o, pos, maxPreco, criterio) {
+  const melhor = pos === 0;
+  const medals = ['🥇', '🥈', '🥉'];
+  const vigente = cotacaoVigente(o.cotacao_id);
+  return `<div class="oferta ${melhor ? 'melhor' : ''}">
+    ${melhor ? `<span class="medal chip chip-ok">Melhor ${criterio === 'score' ? 'score' : criterio === 'validade' ? 'validade' : 'preço'}</span>` : ''}
+    <div class="of-linha1">
+      <span class="of-forn">${medals[pos] || ''} ${esc(o.fornecedor_nome)}</span>
+      <span class="of-preco">${fmtU(o.preco_unitario_base)}<small>/${unLabel(o.unidade_base)}</small></span>
+    </div>
+    <div class="barra"><i style="width:${(o.preco_unitario_base / maxPreco * 100).toFixed(1)}%"></i></div>
+    <div class="of-meta">
+      <span>${esc(o.procedencia || '—')}</span>
+      <span>lote até ${dataBR(o.validade_lote)} (${mesesAte(o.validade_lote)}m)</span>
+      ${criterio === 'score' ? `<span>⭐ ${(o._score * 100).toFixed(0)}pts</span>` : ''}
+      ${seloTendencia(o)}
+      ${!vigente ? '<span class="chip chip-ouro">vencida</span>' : ''}
+      ${!melhor && o._difPct > 0 ? `<span class="trend t-sobe">+${o._difPct.toFixed(1)}%</span>` : ''}
+    </div>
+    <div class="of-acao">
+      <span class="of-emb">${o.qtd_base} ${esc(o.unidade_base)} · ${fmt(o.preco_com_impostos)} c/ imposto</span>
+      <button class="btn ${melhor ? 'btn-p' : 'btn-s'} btn-sm" onclick="event.stopPropagation();addCart('${esc(o.id)}')">+ Adicionar</button>
+    </div>
+  </div>`;
+}
+
+function detalheInsumo(cod) {
+  const criterio = document.getElementById('fCriterio').value;
+  const grupos = agruparPorInsumo(ofertasFiltradas());
+  const ofertas = rankearOfertas(grupos[cod] || [], criterio);
+  if (!ofertas.length) return;
+  const insumo = DB.insumos.find(i => String(i.codigo) === String(cod)) || { nome: ofertas[0].insumo_nome };
+  const maxPreco = Math.max(...ofertas.map(o => o.preco_unitario_base));
+  const forns = [...new Set(ofertas.map(o => o.fornecedor_nome))];
+  const series = forns.map(f => ({ nome: f, cor: corForn(f), pontos: serieHistorica(cod, f) })).filter(s => s.pontos.length > 1);
+  document.getElementById('mDetalheBody').innerHTML = `
+    <h2>${esc(insumo.nome)}</h2>
+    <p class="m-sub">${ofertas.length} oferta${ofertas.length > 1 ? 's' : ''} atual${ofertas.length > 1 ? 'is' : ''} · comparação por ${unLabel(ofertas[0].unidade_base)}</p>
+    ${ofertas.map((o, i) => ofertaHTML(o, i, maxPreco, criterio)).join('')}
+    ${series.length ? `<div class="olho" style="margin-top:18px">Evolução de preço</div>${grafico(series)}
+      <div class="legenda">${series.map(s => `<span><i style="background:${s.cor}"></i>${esc(s.nome)}</span>`).join('')}</div>` : ''}
+    <div class="modal-acoes"><button class="btn btn-s" onclick="fecharModal('mDetalhe')">Fechar</button></div>`;
+  abrirModal('mDetalhe');
+}
+
+function renderFornUnico(grupos) {
+  const el = document.getElementById('fornUnico');
+  const codigos = Object.keys(grupos);
+  if (!codigos.length) { el.innerHTML = '<div class="panel vazio"><b>Sem dados</b><p>Registre cotações para comparar fornecedores.</p></div>'; return; }
+  const forns = {};
+  codigos.forEach(cod => {
+    const melhorGeral = Math.min(...grupos[cod].map(o => o.preco_unitario_base));
+    const porForn = {};
+    grupos[cod].forEach(o => {
+      if (!porForn[o.fornecedor_nome] || o.preco_unitario_base < porForn[o.fornecedor_nome].preco_unitario_base) porForn[o.fornecedor_nome] = o;
+    });
+    Object.values(porForn).forEach(o => {
+      const f = forns[o.fornecedor_nome] = forns[o.fornecedor_nome] || { nome: o.fornecedor_nome, cobre: 0, total: 0, sobrepreco: 0 };
+      f.cobre++; f.total += o.preco_com_impostos;
+      f.sobrepreco += (o.preco_unitario_base - melhorGeral) * o.qtd_base;
+    });
+  });
+  const cad = n => DB.fornecedores.find(f => f.nome === n) || {};
+  const rank = Object.values(forns).sort((a, b) => (b.cobre - a.cobre) || (a.sobrepreco - b.sobrepreco));
+  el.innerHTML = `<p class="sub" style="margin-bottom:2px">Para fazer <b>um pedido só</b>: quem cobre mais itens da lista com menor sobrepreço vs. o melhor item a item.</p>` +
+    rank.map((f, i) => {
+      const c = cad(f.nome);
+      return `<div class="panel cot-card">
+        <div class="cot-ic" style="font-family:'Fraunces',serif;font-size:17px;font-weight:600;${i === 0 ? '' : 'background:#EFEDE6;color:var(--tinta-2)'}">${i + 1}º</div>
+        <div class="cot-info">
+          <div class="cot-forn">${esc(f.nome)}</div>
+          <div class="cot-meta">${c.prazo_entrega_dias ? 'prazo ' + c.prazo_entrega_dias + ' dias · ' : ''}${c.pedido_minimo ? 'mínimo ' + fmt(c.pedido_minimo) : ''}</div>
+        </div>
+        <div class="cot-dir" style="gap:22px">
+          <div style="text-align:right"><div class="mono" style="font-weight:600">${f.cobre}/${codigos.length}</div><div style="font-size:11px;color:var(--tinta-2);font-weight:600">COBERTURA</div></div>
+          <div style="text-align:right"><div class="mono" style="font-weight:600">${fmt(f.total)}</div><div style="font-size:11px;color:var(--tinta-2);font-weight:600">TOTAL</div></div>
+          <div style="text-align:right"><div class="mono" style="font-weight:600;color:${f.sobrepreco > 0.5 ? 'var(--alerta)' : 'var(--ok)'}">+${fmt(f.sobrepreco)}</div><div style="font-size:11px;color:var(--tinta-2);font-weight:600">SOBREPREÇO</div></div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+/* ============================================================
+ * RENDER: HISTÓRICO
+ * ============================================================ */
+const CORES = ['#123F30', '#A98142', '#2B5D8A', '#8B3A62', '#1E7A4F', '#B4462E'];
+const corForn = nome => {
+  const forns = [...new Set(DB.itens.map(i => i.fornecedor_nome))].sort();
+  return CORES[forns.indexOf(nome) % CORES.length];
+};
+
+function renderHistorico() {
+  popularInsumosHistorico();
+  renderHistoricoInsumo();
+  renderAlertas();
+  renderRankingAltas();
+}
+
+function popularInsumosHistorico() {
+  const sel = document.getElementById('hInsumo');
+  const anterior = sel.value;
+  const codigos = [...new Set(DB.itens.filter(i => i.insumo_codigo).map(i => String(i.insumo_codigo)))];
+  const opts = codigos.map(c => {
+    const ins = DB.insumos.find(i => String(i.codigo) === c);
+    const nome = ins ? ins.nome : (DB.itens.find(i => String(i.insumo_codigo) === c) || {}).insumo_nome || c;
+    const n = new Set(DB.itens.filter(i => String(i.insumo_codigo) === c).map(i => i.cotacao_id)).size;
+    return { c, nome, n };
+  }).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  sel.innerHTML = opts.map(o => `<option value="${esc(o.c)}">${esc(o.nome)} — ${o.n} cotaç${o.n > 1 ? 'ões' : 'ão'}</option>`).join('');
+  if (anterior && opts.some(o => o.c === anterior)) { sel.value = anterior; return; }
+  const disputa = c => new Set(DB.itens.filter(i => String(i.insumo_codigo) === c).map(i => i.fornecedor_nome)).size;
+  const melhor = opts.slice().sort((a, b) => (disputa(b.c) - disputa(a.c)) || (b.n - a.n))[0];
+  if (melhor) sel.value = melhor.c;
+}
+
+function renderHistoricoInsumo() {
+  const cod = document.getElementById('hInsumo').value;
+  const meses = Number(document.getElementById('hPeriodo').value || 0);
+  const corte = meses ? new Date(Date.now() - meses * 2629800000).toISOString().slice(0, 10) : '';
+  if (!cod) {
+    document.getElementById('hChart').innerHTML = `<div class="vazio"><b>Sem histórico ainda</b><p>Salve cotações e a memória de preços começa a se formar aqui.</p></div>`;
+    document.getElementById('hTabela').innerHTML = '';
+    return;
+  }
+  const forns = [...new Set(DB.itens.filter(i => String(i.insumo_codigo) === cod).map(i => i.fornecedor_nome))];
+  const series = forns.map(f => ({ nome: f, cor: corForn(f), pontos: serieHistorica(cod, f).filter(p => !corte || p.data >= corte) }))
+    .filter(s => s.pontos.length);
+
+  document.getElementById('hChart').innerHTML = series.length
+    ? grafico(series) + `<div class="legenda">${series.map(s => `<span><i style="background:${s.cor}"></i>${esc(s.nome)}</span>`).join('')}</div>`
+    : `<div class="vazio"><b>Sem dados no período</b><p>Amplie o período ou registre mais cotações deste insumo.</p></div>`;
+
+  const un = (DB.itens.find(i => String(i.insumo_codigo) === cod) || {}).unidade_base || 'g';
+  document.getElementById('hTabela').innerHTML = series.map(s => {
+    const st = statsSerie(s.pontos);
+    const cls = st.varTotal > 2 ? 't-sobe' : st.varTotal < -2 ? 't-cai' : 't-igual';
+    const seta = st.varTotal > 2 ? '↑' : st.varTotal < -2 ? '↓' : '→';
+    const vol = st.cv > 0.12 ? 'alta' : st.cv > 0.05 ? 'média' : 'baixa';
+    const volChip = st.cv > 0.12 ? 'chip-alerta' : st.cv > 0.05 ? 'chip-ouro' : 'chip-ok';
+    return `<tr>
+      <td><b style="color:${s.cor}">${esc(s.nome)}</b></td><td>${st.n}</td>
+      <td class="mono">${st.n > 1 ? fmtU(st.primeiro) : '—'}</td>
+      <td class="mono"><b>${fmtU(st.atual)}</b>/${unLabel(un)}</td>
+      <td>${st.n > 1 ? `<span class="trend ${cls}">${seta} ${st.varTotal > 0 ? '+' : ''}${st.varTotal.toFixed(1)}%</span>` : '<span class="trend t-igual">—</span>'}</td>
+      <td class="mono">${fmtU(st.media)}</td>
+      <td class="mono" style="font-size:12.5px">${fmtU(st.min)} / ${fmtU(st.max)}</td>
+      <td>${st.n > 1 ? `<span class="chip ${volChip}">${vol} (${(st.cv * 100).toFixed(1)}%)</span>` : '—'}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" style="text-align:center;color:var(--tinta-2)">Sem dados no período.</td></tr>`;
+}
+
+function grafico(series) {
+  const W = 720, H = 250, ML = 62, MR = 14, MT = 14, MB = 34;
+  const todos = series.flatMap(s => s.pontos);
+  if (!todos.length) return '';
+  const datas = [...new Set(todos.map(p => p.data))].sort();
+  const minP = Math.min(...todos.map(p => p.preco)), maxP = Math.max(...todos.map(p => p.preco));
+  const pad = (maxP - minP) * 0.15 || maxP * 0.1 || 1;
+  const y0 = Math.max(0, minP - pad), y1 = maxP + pad;
+  const tx = d => ML + (datas.length === 1 ? (W - ML - MR) / 2 : (datas.indexOf(d) / (datas.length - 1)) * (W - ML - MR));
+  const ty = p => MT + (1 - (p - y0) / (y1 - y0)) * (H - MT - MB);
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução de preço por fornecedor" style="width:100%">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = y0 + (y1 - y0) * i / 4, y = ty(v);
+    g += `<line x1="${ML}" y1="${y}" x2="${W - MR}" y2="${y}" stroke="#EBE7DD" stroke-width="1"/>`;
+    g += `<text x="${ML - 8}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#68766E" font-family="IBM Plex Mono,monospace">${fmtU(v).replace('R$ ', '')}</text>`;
+  }
+  datas.forEach((d, i) => {
+    if (datas.length > 8 && i % 2) return;
+    g += `<text x="${tx(d)}" y="${H - 12}" text-anchor="middle" font-size="10.5" fill="#68766E">${d.slice(8, 10)}/${d.slice(5, 7)}</text>`;
+  });
+  series.forEach(s => {
+    const pts = s.pontos.map(p => `${tx(p.data)},${ty(p.preco)}`).join(' ');
+    if (s.pontos.length > 1) g += `<polyline points="${pts}" fill="none" stroke="${s.cor}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.pontos.forEach(p => {
+      g += `<circle cx="${tx(p.data)}" cy="${ty(p.preco)}" r="4" fill="#fff" stroke="${s.cor}" stroke-width="2.5"><title>${esc(s.nome)} · ${dataBR(p.data)} · ${fmtU(p.preco)}</title></circle>`;
+    });
+  });
+  return g + '</svg>';
+}
+
+function renderAlertas() {
+  const alertas = alertasPreco();
+  document.getElementById('alertasResumo').textContent =
+    alertas.length ? `${alertas.length} item(ns) acima da média do próprio fornecedor` : 'nenhum item fora do padrão';
+  const el = document.getElementById('alertasPreco');
+  if (!alertas.length) {
+    el.innerHTML = `<div style="padding:22px;text-align:center;color:var(--tinta-2);font-size:13.5px">${DB.itens.length ? 'Tudo dentro do histórico.' : 'Os alertas aparecem quando houver pelo menos duas cotações do mesmo fornecedor.'}</div>`;
+    return;
+  }
+  el.innerHTML = alertas.slice(0, 8).map(({ item, st }) => `
+    <div class="alerta-preco" onclick="document.getElementById('hInsumo').value='${esc(item.insumo_codigo)}';renderHistoricoInsumo()">
+      <div>
+        <b>${esc(item.insumo_nome)}</b> <span style="color:var(--tinta-2)">· ${esc(item.fornecedor_nome)}</span>
+        <div style="font-size:12.5px;color:var(--tinta-2)">média de ${st.n} cotações: ${fmtU(st.media)}/${unLabel(item.unidade_base)} · agora: <b>${fmtU(st.atual)}</b> · menor já visto: ${fmtU(st.min)}</div>
+      </div>
+      <span class="trend t-sobe">↑ ${st.vsMedia.toFixed(0)}% acima da média</span>
+    </div>`).join('');
+}
+
+function renderRankingAltas() {
+  const linhas = apenasMaisRecentes(DB.itens)
+    .filter(i => i.insumo_codigo)
+    .map(i => ({ item: i, st: memoriaDe(i) }))
+    .filter(x => x.st && x.st.n >= 2)
+    .sort((a, b) => b.st.vsMedia - a.st.vsMedia)
+    .slice(0, 12);
+  document.getElementById('hRanking').innerHTML = linhas.map(({ item, st }) => {
+    const cls = st.vsMedia > 3 ? 't-sobe' : st.vsMedia < -3 ? 't-cai' : 't-igual';
+    return `<tr class="clicavel" onclick="document.getElementById('hInsumo').value='${esc(item.insumo_codigo)}';renderHistoricoInsumo();window.scrollTo({top:0,behavior:'smooth'})">
+      <td><b>${esc(item.insumo_nome)}</b></td><td>${esc(item.fornecedor_nome)}</td>
+      <td class="mono">${fmtU(st.media)}</td><td class="mono"><b>${fmtU(st.atual)}</b></td>
+      <td><span class="trend ${cls}">${st.vsMedia > 0 ? '+' : ''}${st.vsMedia.toFixed(1)}%</span></td>
+      <td style="color:var(--tinta-2);font-size:12.5px">${st.n} cotações desde ${dataBR(st.dataPrimeiro)}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--tinta-2)">São necessárias pelo menos duas cotações do mesmo fornecedor para comparar.</td></tr>`;
+}
+
+/* ============================================================
+ * COTAÇÕES — upload, análise IA e confirmação
+ * ============================================================ */
+const dropCot = document.getElementById('dropCot');
+['dragover', 'dragleave', 'drop'].forEach(ev => dropCot.addEventListener(ev, e => {
+  e.preventDefault(); e.stopPropagation();
+  dropCot.style.borderColor = ev === 'dragover' ? 'var(--ouro)' : '';
+  if (ev === 'drop' && e.dataTransfer.files[0]) onPdf(e.dataTransfer.files[0]);
+}));
+
+function lerBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function onPdf(file) {
+  if (!file || file.type !== 'application/pdf') { toast('Envie um arquivo PDF.'); return; }
+  Loader.abrir('Enviando o PDF…');
+  try {
+    const base64 = await lerBase64(file);
+    Loader.marco(25, 'Lendo o documento (OCR)…');
+    const res = await api('parseCotacao', { pdfBase64: base64, filename: file.name });
+    Loader.marco(85, 'Organizando os itens…');
+    abrirRevisao(res.cotacao);
+    Loader.fechar();
+  } catch (e) { Loader.erro(); toast('Erro na leitura: ' + e.message); }
+  document.getElementById('filePdf').value = '';
+}
+
+async function parseTexto() {
+  const texto = document.getElementById('txtCotacao').value.trim();
+  if (!texto) { toast('Cole o texto da cotação primeiro.'); return; }
+  fecharModal('mTexto');
+  Loader.abrir('A IA está analisando o texto…');
+  try {
+    const res = await api('parseCotacao', { texto });
+    Loader.marco(85, 'Organizando os itens…');
+    abrirRevisao(res.cotacao);
+    Loader.fechar();
+  } catch (e) { Loader.erro(); toast('Erro na análise: ' + e.message); }
+}
+
+function abrirRevisao(cot) {
+  REVISAO = cot;
+  document.getElementById('revForn').value = cot.fornecedor_nome || '';
+  document.getElementById('revNum').value = cot.numero_cotacao || '';
+  document.getElementById('revData').value = cot.data_cotacao || hoje();
+  document.getElementById('revValida').value = cot.valida_ate || '';
+  renderRevisao();
+  document.getElementById('revisao').style.display = 'block';
+  document.getElementById('revisao').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('txtCotacao').value = '';
+}
+
+function compararComHistorico(it) {
+  if (!it.insumo_codigo) return '';
+  const forn = document.getElementById('revForn').value.trim();
+  if (!forn) return '';
+  const st = statsSerie(serieHistorica(it.insumo_codigo, forn));
+  if (!st) return '<span class="trend t-igual">sem histórico neste fornecedor</span>';
+  const d = (Number(it.preco_unitario_base) / st.media - 1) * 100;
+  const cls = d > 5 ? 't-sobe' : d < -5 ? 't-cai' : 't-igual';
+  const seta = d > 5 ? '↑' : d < -5 ? '↓' : '≈';
+  return `<span class="trend ${cls}" title="Média de ${st.n} cotações: ${fmtU(st.media)}">${seta} ${d > 0 ? '+' : ''}${d.toFixed(0)}% vs média histórica</span>`;
+}
+
+function renderRevisao() {
+  if (!REVISAO) return;
+  const optsInsumos = DB.insumos
+    .filter(i => String(i.ativo).toUpperCase() !== 'NAO')
+    .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))
+    .map(i => `<option value="${esc(i.codigo)}">${esc(i.nome)} (${esc(i.codigo)})</option>`).join('');
+
+  document.getElementById('revItens').innerHTML = REVISAO.itens.map((it, idx) => {
+    const ok = !!it.insumo_codigo;
+    const insumo = ok ? DB.insumos.find(i => String(i.codigo) === String(it.insumo_codigo)) : null;
+    return `<div class="rev-item ${ok ? 'ok' : 'warn'}">
+      <div class="rev-top">
+        <div>
+          <div class="rev-nome">${esc(it.nome_original)}</div>
+          <div class="rev-meta">
+            <span>${esc(it.embalagem || (it.quantidade + ' ' + it.unidade))}</span>
+            <span>${esc(it.procedencia || '—')}</span>
+            <span>lote ${dataBR(it.validade_lote)}</span>
+            <span class="mono">${fmt(it.preco_com_impostos)}</span>
+            <span class="mono" style="color:var(--ok);font-weight:600">${fmtU(it.preco_unitario_base)}/${unLabel(it.unidade_base)}</span>
+            ${compararComHistorico(it)}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${ok ? `<span class="chip chip-ok">✓ ${esc(insumo ? insumo.nome : it.insumo_codigo)}</span>` : '<span class="chip chip-ouro">confirmar vínculo</span>'}
+          <button class="btn btn-d btn-sm" onclick="REVISAO.itens.splice(${idx},1);renderRevisao()">✕</button>
+        </div>
+      </div>
+      <div class="rev-match">
+        <select onchange="vincular(${idx},this.value)">
+          <option value="">— vincular ao catálogo —</option>${optsInsumos}
+        </select>
+        <button class="btn btn-s btn-sm" onclick="criarDoItem(${idx})">+ Criar no catálogo</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('#revItens .rev-item').forEach((el, idx) => {
+    const sel = el.querySelector('select');
+    if (REVISAO.itens[idx].insumo_codigo) sel.value = REVISAO.itens[idx].insumo_codigo;
+  });
+}
+
+function vincular(idx, codigo) {
+  const it = REVISAO.itens[idx];
+  it.insumo_codigo = codigo || null;
+  const insumo = DB.insumos.find(i => String(i.codigo) === String(codigo));
+  it.insumo_nome = insumo ? insumo.nome : '';
+  renderRevisao();
+}
+
+function criarDoItem(idx) {
+  const it = REVISAO.itens[idx];
+  abrirInsumo();
+  document.getElementById('inNome').value = it.nome_original;
+  document.getElementById('inCodigo').value = 'N' + Date.now().toString().slice(-6);
+  document.getElementById('inUnidade').value = it.unidade_base || 'g';
+  window._aposCriarInsumo = codigo => { vincular(idx, codigo); };
+}
+
+function cancelarRevisao() {
+  REVISAO = null;
+  document.getElementById('revisao').style.display = 'none';
+}
+
+async function salvarCotacao() {
+  if (!REVISAO) return;
+  REVISAO.fornecedor_nome = document.getElementById('revForn').value.trim();
+  REVISAO.numero_cotacao = document.getElementById('revNum').value.trim();
+  REVISAO.data_cotacao = document.getElementById('revData').value;
+  REVISAO.valida_ate = document.getElementById('revValida').value;
+  if (!REVISAO.fornecedor_nome) { toast('Informe o fornecedor.'); return; }
+  const semMatch = REVISAO.itens.filter(i => !i.insumo_codigo).length;
+  if (semMatch && !confirm(`${semMatch} item(ns) sem vínculo com o catálogo ficarão fora do comparativo. Continuar?`)) return;
+  Loader.abrir('Salvando na planilha…');
+  try {
+    await api('saveCotacao', { cotacao: REVISAO });
+    Loader.marco(55, 'Atualizando memória e score…');
+    cancelarRevisao();
+    await carregar(true);
+    Loader.fechar();
+    toast('Cotação salva — comparativo atualizado.');
+  } catch (e) { Loader.erro(); toast('Erro ao salvar: ' + e.message); }
+}
+
+async function arquivarCotacao(id) {
+  fecharModal('mDetalhe');
+  Loader.abrir('Arquivando…');
+  try { await api('arquivarCotacao', { cotacao_id: id }); await carregar(true); Loader.fechar(); toast('Cotação arquivada — histórico preservado.'); }
+  catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+async function excluirCotacao(id) {
+  if (!confirm('Excluir apaga os preços desta cotação da memória histórica e afeta o score. Para tirar do comparativo sem perder o histórico, use Arquivar.\n\nExcluir mesmo assim?')) return;
+  fecharModal('mDetalhe');
+  Loader.abrir('Excluindo…');
+  try { await api('deleteCotacao', { cotacao_id: id }); await carregar(true); Loader.fechar(); toast('Cotação excluída.'); }
+  catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+/* ============================================================
+ * INSUMOS — catálogo e importação em massa
+ * ============================================================ */
+function renderInsumos() {
+  const busca = norm(document.getElementById('iBusca').value);
+  const cat = document.getElementById('iCat').value;
+  const tb = document.getElementById('tbInsumos');
+  const lista = DB.insumos
+    .filter(i => (!cat || i.categoria === cat) && (!busca || norm(i.nome + ' ' + i.codigo + ' ' + (i.sinonimos || '')).includes(busca)))
+    .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  if (!DB.insumos.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="vazio" style="padding:44px 20px">
+      <b>Catálogo vazio</b>
+      <p>Importe a lista de insumos da Floema em massa (PDF ou foto) ou cadastre um a um.</p>
+      <button class="btn btn-o" onclick="abrirModal('mImporta')">⇪ Importar em massa</button>
+    </div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = lista.map(i => {
+    const nOfertas = DB.itens.filter(x => String(x.insumo_codigo) === String(i.codigo)).length;
+    return `<tr class="clicavel" onclick="abrirInsumo('${esc(i.codigo)}')">
+      <td><b>${esc(i.nome)}</b>${String(i.ativo).toUpperCase() === 'NAO' ? ' <span class="chip chip-cinza">inativo</span>' : ''}
+        <div style="font-size:11.5px;color:var(--tinta-3)" class="mono">${esc(i.codigo)}</div></td>
+      <td>${esc(i.categoria || '—')}</td>
+      <td>${unLabel(i.unidade_base)}</td>
+      <td>${nOfertas ? `<span class="chip chip-ok">${nOfertas}</span>` : '<span class="chip chip-cinza">0</span>'}</td>
+      <td style="text-align:right;color:var(--ouro);font-weight:700;font-size:12.5px">Editar →</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--tinta-2)">Nenhum insumo encontrado com estes filtros.</td></tr>`;
+}
+
+function abrirInsumo(codigo) {
+  const i = codigo ? DB.insumos.find(x => String(x.codigo) === String(codigo)) : null;
+  document.getElementById('mInsumoTitulo').textContent = i ? 'Editar insumo' : 'Novo insumo';
+  document.getElementById('inCodigo').value = i ? i.codigo : '';
+  document.getElementById('inCodigo').readOnly = !!i;
+  document.getElementById('inNome').value = i ? i.nome : '';
+  document.getElementById('inUnidade').value = i ? i.unidade_base : 'g';
+  document.getElementById('inCat').value = i ? (i.categoria || '') : '';
+  document.getElementById('inSin').value = i ? (i.sinonimos || '') : '';
+  document.getElementById('inObs').value = i ? (i.observacao || '') : '';
+  document.getElementById('inAtivo').value = i ? (String(i.ativo).toUpperCase() === 'NAO' ? 'NAO' : 'SIM') : 'SIM';
+  window._aposCriarInsumo = null;
+  abrirModal('mInsumo');
+}
+
+async function gravarInsumo() {
+  const insumo = {
+    codigo: document.getElementById('inCodigo').value.trim(),
+    nome: document.getElementById('inNome').value.trim(),
+    unidade_base: document.getElementById('inUnidade').value,
+    categoria: document.getElementById('inCat').value.trim(),
+    sinonimos: document.getElementById('inSin').value.trim(),
+    observacao: document.getElementById('inObs').value.trim(),
+    ativo: document.getElementById('inAtivo').value
+  };
+  if (!insumo.codigo || !insumo.nome) { toast('Código e nome são obrigatórios.'); return; }
+  Loader.abrir('Salvando insumo…');
+  try {
+    await api('saveInsumo', { insumo });
+    const ix = DB.insumos.findIndex(x => String(x.codigo) === String(insumo.codigo));
+    if (ix >= 0) DB.insumos[ix] = insumo; else DB.insumos.push(insumo);
+    fecharModal('mInsumo');
+    renderInsumos(); popularFiltros();
+    if (window._aposCriarInsumo) { window._aposCriarInsumo(insumo.codigo); window._aposCriarInsumo = null; }
+    Loader.fechar();
+    toast('Insumo salvo.');
+  } catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+/* ---- Importação em massa (PDF ou imagem) ---- */
+const dropIns = document.getElementById('dropInsumos');
+['dragover', 'dragleave', 'drop'].forEach(ev => dropIns.addEventListener(ev, e => {
+  e.preventDefault(); e.stopPropagation();
+  dropIns.classList.toggle('over', ev === 'dragover');
+  if (ev === 'drop' && e.dataTransfer.files[0]) onArquivoInsumos(e.dataTransfer.files[0]);
+}));
+
+async function onArquivoInsumos(file) {
+  if (!file) return;
+  const ehPdf = file.type === 'application/pdf';
+  const ehImg = file.type.startsWith('image/');
+  if (!ehPdf && !ehImg) { toast('Envie um PDF ou uma imagem.'); return; }
+  Loader.abrir('Enviando o arquivo…');
+  try {
+    const base64 = await lerBase64(file);
+    Loader.marco(25, ehPdf ? 'Lendo o PDF (OCR)…' : 'A IA está lendo a imagem…');
+    const payload = ehPdf ? { pdfBase64: base64, filename: file.name } : { imageBase64: base64, mimeType: file.type };
+    const res = await api('parseInsumos', payload);
+    Loader.marco(85, 'Preparando a revisão…');
+    IMPORTA = res.insumos || [];
+    renderImporta();
+    Loader.fechar();
+    if (!IMPORTA.length) toast('Nenhum insumo identificado no arquivo.');
+  } catch (e) { Loader.erro(); toast('Erro na leitura: ' + e.message); }
+  document.getElementById('fileInsumos').value = '';
+}
+
+function renderImporta() {
+  const tb = document.getElementById('tbImporta');
+  const existentes = new Set(DB.insumos.map(i => String(i.codigo)));
+  const nomes = new Set(DB.insumos.map(i => norm(i.nome)));
+  tb.innerHTML = IMPORTA.map((it, idx) => {
+    const jaExiste = existentes.has(String(it.codigo)) || nomes.has(norm(it.nome));
+    it._sel = !jaExiste;
+    return `<tr>
+      <td><input type="checkbox" ${jaExiste ? '' : 'checked'} onchange="IMPORTA[${idx}]._sel=this.checked"></td>
+      <td><input class="mono" style="width:92px;padding:6px 8px;border:1px solid var(--linha);border-radius:7px;font-size:12.5px" value="${esc(it.codigo || '')}" onchange="IMPORTA[${idx}].codigo=this.value"></td>
+      <td><input style="width:100%;min-width:170px;padding:6px 8px;border:1px solid var(--linha);border-radius:7px;font-size:13px" value="${esc(it.nome || '')}" onchange="IMPORTA[${idx}].nome=this.value">
+        ${jaExiste ? '<span class="chip chip-cinza" style="margin-top:3px">já no catálogo</span>' : ''}</td>
+      <td><select style="padding:6px;border:1px solid var(--linha);border-radius:7px;font-size:12.5px" onchange="IMPORTA[${idx}].unidade_base=this.value">
+        ${['g', 'ml', 'mil', 'un'].map(u => `<option value="${u}" ${it.unidade_base === u ? 'selected' : ''}>${u}</option>`).join('')}</select></td>
+      <td><input style="width:96px;padding:6px 8px;border:1px solid var(--linha);border-radius:7px;font-size:12.5px" value="${esc(it.categoria || '')}" onchange="IMPORTA[${idx}].categoria=this.value"></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('importaRevisao').style.display = 'block';
+  document.getElementById('btnImporta').style.display = '';
+}
+
+function resetImporta() {
+  IMPORTA = null;
+  document.getElementById('importaRevisao').style.display = 'none';
+  document.getElementById('btnImporta').style.display = 'none';
+  document.getElementById('tbImporta').innerHTML = '';
+}
+
+async function salvarImportacao() {
+  const selecionados = (IMPORTA || []).filter(i => i._sel && i.nome && i.codigo)
+    .map(i => ({ codigo: String(i.codigo).trim(), nome: i.nome.trim(), unidade_base: i.unidade_base || 'g', categoria: i.categoria || '', sinonimos: i.sinonimos || '', observacao: '', ativo: 'SIM' }));
+  if (!selecionados.length) { toast('Nenhum item selecionado.'); return; }
+  Loader.abrir(`Salvando ${selecionados.length} insumos…`);
+  try {
+    await api('saveInsumosLote', { insumos: selecionados });
+    Loader.marco(70, 'Atualizando o catálogo…');
+    fecharModal('mImporta'); resetImporta();
+    await carregar(true);
+    Loader.fechar();
+    toast(`${selecionados.length} insumos importados.`);
+  } catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+/* ============================================================
+ * FORNECEDORES — score em cards, detalhe no modal
+ * ============================================================ */
+function renderScores() {
+  const lista = scoresFornecedores();
+  const el = document.getElementById('scoreGrid');
+  const cadastrados = DB.fornecedores.filter(f => !lista.some(s => s.nome === f.nome));
+  if (!lista.length && !cadastrados.length) {
+    el.innerHTML = `<div class="panel vazio" style="grid-column:1/-1">
+      <b>Nenhum fornecedor ainda</b>
+      <p>Fornecedores são criados automaticamente quando você salva a primeira cotação deles — e o score se forma com o histórico.</p>
+    </div>`;
+    document.getElementById('scoreLegenda').textContent = '';
+    return;
+  }
+  const anel = (n, cor) => {
+    const r = 26, c = 2 * Math.PI * r;
+    return `<div class="score-anel"><svg viewBox="0 0 62 62" width="62" height="62">
+      <circle cx="31" cy="31" r="${r}" fill="none" stroke="#EFEDE6" stroke-width="6"/>
+      <circle cx="31" cy="31" r="${r}" fill="none" stroke="${cor}" stroke-width="6" stroke-linecap="round"
+        stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - n / 100)}"/></svg><b style="color:${cor}">${n}</b></div>`;
+  };
+  el.innerHTML = lista.map((f, i) => {
+    const fx = faixaDe(f.total);
+    return `<div class="panel score-mini clique" onclick="detalheFornecedor('${esc(f.nome)}')">
+      ${anel(f.total, fx.cor)}
+      <div>
+        <div style="font-weight:700;font-size:15px">${i + 1}º · ${esc(f.nome)}</div>
+        <span class="chip ${fx.chip}" style="margin:4px 0">${fx.nome}</span>
+        <div style="font-size:12px;color:var(--tinta-2)">${f.vitorias}/${f.itens} no melhor preço</div>
+      </div>
+    </div>`;
+  }).join('') + cadastrados.map(f => `
+    <div class="panel score-mini clique" onclick="detalheFornecedor('${esc(f.nome)}')">
+      <div class="score-anel"><svg viewBox="0 0 62 62" width="62" height="62"><circle cx="31" cy="31" r="26" fill="none" stroke="#EFEDE6" stroke-width="6"/></svg><b style="color:var(--tinta-3)">—</b></div>
+      <div>
+        <div style="font-weight:700;font-size:15px">${esc(f.nome)}</div>
+        <span class="chip chip-cinza" style="margin:4px 0">sem cotações</span>
+      </div>
+    </div>`).join('');
+  document.getElementById('scoreLegenda').textContent =
+    lista.length ? 'Pesos: competitividade 35% · estabilidade 20% · tendência 15% · cobertura 15% · frequência 10% · validade 5%. Fornecedores com uma única cotação recebem nota neutra em estabilidade e tendência.' : '';
+}
+
+function detalheFornecedor(nome) {
+  const f = scoresFornecedores().find(x => x.nome === nome);
+  const cad = DB.fornecedores.find(x => x.nome === nome) || {};
+  const fx = f ? faixaDe(f.total) : null;
+  document.getElementById('mDetalheBody').innerHTML = `
+    <h2>${esc(nome)}</h2>
+    <p class="m-sub">${esc(cad.vendedor || '')}${cad.vendedor && (cad.email || cad.telefone) ? ' · ' : ''}${esc(cad.email || '')}${cad.email && cad.telefone ? ' · ' : ''}${esc(cad.telefone || '')}</p>
+    ${f ? `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+        <span class="chip ${fx.chip}" style="font-size:13px;padding:6px 14px">Score ${f.total} · ${fx.nome}</span>
+        <span style="font-size:12.5px;color:var(--tinta-2)">${f.cotacoes} cotações · ${f.vitorias}/${f.itens} itens no melhor preço · prêmio médio ${f.premioMedio.toFixed(1)}%</span>
+      </div>
+      ${Object.entries(PESOS).map(([k]) => `
+        <div class="comp">
+          <div class="cl"><span>${LABEL_COMP[k]}</span><span>${(f.comp[k] * 100).toFixed(0)}</span></div>
+          <div class="cb"><i style="width:${(f.comp[k] * 100).toFixed(0)}%;background:${fx.cor}"></i></div>
+        </div>`).join('')}` :
+      '<p style="color:var(--tinta-2);font-size:13.5px;margin-bottom:14px">Ainda sem cotações registradas — o score se forma com o histórico de preços.</p>'}
+    <div style="font-size:12.5px;color:var(--tinta-2);margin-top:14px">
+      ${cad.prazo_entrega_dias ? 'Prazo de entrega: ' + cad.prazo_entrega_dias + ' dias · ' : ''}${cad.pedido_minimo ? 'Pedido mínimo: ' + fmt(cad.pedido_minimo) : ''}
+    </div>
+    <div class="modal-acoes">
+      <button class="btn btn-s btn-sm" onclick="fecharModal('mDetalhe');abrirFornecedor('${esc(cad.id || '')}','${esc(nome)}')">Editar cadastro</button>
+      <button class="btn btn-p btn-sm" onclick="fecharModal('mDetalhe')">Fechar</button>
+    </div>`;
+  abrirModal('mDetalhe');
+}
+
+function abrirFornecedor(id, nomeFallback) {
+  const f = id ? DB.fornecedores.find(x => String(x.id) === String(id)) : null;
+  document.getElementById('mFornTitulo').textContent = f ? 'Editar fornecedor' : 'Novo fornecedor';
+  document.getElementById('fnId').value = f ? f.id : '';
+  document.getElementById('fnNome').value = f ? f.nome : (nomeFallback || '');
+  document.getElementById('fnVend').value = f ? (f.vendedor || '') : '';
+  document.getElementById('fnTel').value = f ? (f.telefone || '') : '';
+  document.getElementById('fnEmail').value = f ? (f.email || '') : '';
+  document.getElementById('fnPrazo').value = f ? (f.prazo_entrega_dias || '') : '';
+  document.getElementById('fnMin').value = f ? (f.pedido_minimo || '') : '';
+  document.getElementById('fnObs').value = f ? (f.observacao || '') : '';
+  abrirModal('mForn');
+}
+
+async function gravarFornecedor() {
+  const fornecedor = {
+    id: document.getElementById('fnId').value,
+    nome: document.getElementById('fnNome').value.trim(),
+    vendedor: document.getElementById('fnVend').value.trim(),
+    telefone: document.getElementById('fnTel').value.trim(),
+    email: document.getElementById('fnEmail').value.trim(),
+    prazo_entrega_dias: document.getElementById('fnPrazo').value,
+    pedido_minimo: document.getElementById('fnMin').value,
+    observacao: document.getElementById('fnObs').value.trim()
+  };
+  if (!fornecedor.nome) { toast('Nome é obrigatório.'); return; }
+  Loader.abrir('Salvando fornecedor…');
+  try {
+    await api('saveFornecedor', { fornecedor });
+    fecharModal('mForn');
+    await carregar(true);
+    Loader.fechar();
+    toast('Fornecedor salvo.');
+  } catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+/* ============================================================
+ * CARRINHO / LISTA DE COMPRAS
+ * ============================================================ */
+function addCart(itemId) {
+  const item = DB.itens.find(i => i.id === itemId);
+  if (!item) return;
+  const ex = CART.find(c => c.id === itemId);
+  if (ex) ex.qtd++; else CART.push({ id: itemId, qtd: 1 });
+  salvarCart();
+  toast(`${item.insumo_nome} adicionado (${item.fornecedor_nome})`);
+}
+function salvarCart() { localStorage.setItem('floemaCart', JSON.stringify(CART)); atualizarCartBadge(); }
+function atualizarCartBadge() { document.getElementById('cartCount').textContent = CART.reduce((s, c) => s + c.qtd, 0); }
+function mudarQtd(id, delta) {
+  const c = CART.find(x => x.id === id); if (!c) return;
+  c.qtd += delta;
+  if (c.qtd <= 0) CART = CART.filter(x => x.id !== id);
+  salvarCart(); renderCart();
+}
+
+function renderCart() {
+  const el = document.getElementById('cartContent');
+  if (!CART.length) {
+    el.innerHTML = `<div class="panel vazio"><b>Lista vazia</b><p>Abra o Comparativo, toque em um insumo e adicione a melhor oferta.</p>
+      <button class="btn btn-p" onclick="go('comparativo')">Ir para o Comparativo</button></div>`;
+    return;
+  }
+  const linhas = CART.map(c => ({ c, item: DB.itens.find(i => i.id === c.id) })).filter(x => x.item);
+  const grupos = {};
+  linhas.forEach(x => (grupos[x.item.fornecedor_nome] = grupos[x.item.fornecedor_nome] || []).push(x));
+
+  let totalGeral = 0, economiaTotal = 0;
+  const gruposHTML = Object.entries(grupos).map(([forn, arr]) => {
+    const cad = DB.fornecedores.find(f => f.nome === forn) || {};
+    let total = 0;
+    const itensHTML = arr.map(({ c, item }) => {
+      const sub = item.preco_com_impostos * c.qtd;
+      total += sub;
+      const conc = apenasMaisRecentes(DB.itens).filter(i => i.insumo_codigo === item.insumo_codigo && Number(i.preco_unitario_base) > 0);
+      if (conc.length > 1) {
+        const pior = Math.max(...conc.map(o => o.preco_unitario_base));
+        economiaTotal += (pior - item.preco_unitario_base) * item.qtd_base * c.qtd;
+      }
+      return `<div class="cart-item">
+        <div>
+          <div style="font-weight:700">${esc(item.insumo_nome)}</div>
+          <div style="font-size:12px;color:var(--tinta-2)">${item.qtd_base} ${esc(item.unidade_base)}/emb. · ${fmtU(item.preco_unitario_base)}/${unLabel(item.unidade_base)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="qtd-ctrl">
+            <button onclick="mudarQtd('${esc(item.id)}',-1)">−</button>
+            <input value="${c.qtd}" readonly>
+            <button onclick="mudarQtd('${esc(item.id)}',1)">+</button>
+          </div>
+          <div class="mono" style="font-weight:600;min-width:88px;text-align:right">${fmt(sub)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    totalGeral += total;
+    const abaixoMin = cad.pedido_minimo && total < Number(cad.pedido_minimo);
+    return `<div class="panel cart-group">
+      <div class="cart-head">
+        <div><b>${esc(forn)}</b> ${abaixoMin ? `<span class="chip chip-ouro">abaixo do mínimo (${fmt(cad.pedido_minimo)})</span>` : ''}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-s btn-sm" onclick="copiarPedido('${esc(forn).replace(/'/g, "\\'")}')">Copiar pedido</button>
+          <button class="btn btn-p btn-sm" onclick="whatsPedido('${esc(forn).replace(/'/g, "\\'")}')">WhatsApp</button>
+        </div>
+      </div>
+      ${itensHTML}
+      <div class="cart-total"><span>Total ${esc(forn)}</span><span class="mono">${fmt(total)}</span></div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="economia-box">
+      <div><div class="n">${fmt(totalGeral)}</div><div class="l">Total da lista de compras</div></div>
+      <div><div class="n" style="color:var(--ouro-2)">${fmt(economiaTotal)}</div><div class="l">Economia vs. pior oferta de cada item</div></div>
+      <button class="btn" style="background:#fff;color:var(--verde);position:relative;z-index:1" onclick="registrarPedidos()">Registrar pedidos</button>
+    </div>${gruposHTML}
+    <div style="display:flex;justify-content:flex-end"><button class="btn btn-d btn-sm" onclick="if(confirm('Esvaziar a lista?')){CART=[];salvarCart();renderCart()}">Esvaziar lista</button></div>`;
+}
+
+function textoPedido(forn) {
+  const linhas = CART.map(c => ({ c, item: DB.itens.find(i => i.id === c.id) }))
+    .filter(x => x.item && x.item.fornecedor_nome === forn);
+  let total = 0;
+  const corpo = linhas.map(({ c, item }) => {
+    const sub = item.preco_com_impostos * c.qtd; total += sub;
+    return `• ${item.insumo_nome} — ${c.qtd}x embalagem de ${item.qtd_base} ${item.unidade_base} — ${fmt(sub)}`;
+  }).join('\n');
+  return `*PEDIDO — FLOEMA MANIPULAÇÃO*\nPDL Empreendimentos Farmacêuticos Ltda\nCNPJ 24.507.376/0001-55\n\nFornecedor: ${forn}\nRef. cotação de ${new Date().toLocaleDateString('pt-BR')}\n\n${corpo}\n\n*Total: ${fmt(total)}*\n\nPor favor, confirmar disponibilidade e prazo de entrega.`;
+}
+function copiarPedido(forn) {
+  navigator.clipboard.writeText(textoPedido(forn)).then(() => toast('Pedido copiado.'));
+}
+function whatsPedido(forn) {
+  window.open('https://wa.me/?text=' + encodeURIComponent(textoPedido(forn)), '_blank');
+}
+async function registrarPedidos() {
+  const grupos = {};
+  CART.forEach(c => {
+    const item = DB.itens.find(i => i.id === c.id); if (!item) return;
+    (grupos[item.fornecedor_nome] = grupos[item.fornecedor_nome] || []).push({
+      insumo: item.insumo_nome, qtd: c.qtd, embalagem: item.qtd_base + ' ' + item.unidade_base,
+      subtotal: item.preco_com_impostos * c.qtd
+    });
+  });
+  Loader.abrir('Registrando pedidos…');
+  try {
+    const nomes = Object.keys(grupos);
+    for (let i = 0; i < nomes.length; i++) {
+      Loader.marco(20 + (i / nomes.length) * 60, `Registrando pedido ${i + 1} de ${nomes.length}…`);
+      await api('savePedido', { pedido: { fornecedor_nome: nomes[i], itens: grupos[nomes[i]], total: grupos[nomes[i]].reduce((s, x) => s + x.subtotal, 0) } });
+    }
+    Loader.fechar();
+    toast('Pedidos registrados na planilha.');
+  } catch (e) { Loader.erro(); toast('Erro: ' + e.message); }
+}
+
+/* ============================================================
+ * INICIALIZAÇÃO
+ * ============================================================ */
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('on'); }));
+
+(async function init() {
+  if (TOKEN) {
+    Loader.abrir('Reconectando…');
+    try {
+      await carregar(true);
+      mostrarApp();
+      Loader.fechar();
+    } catch (e) { Loader.erro(); /* volta ao login */ }
+  }
+})();
+</script>
+</body>
+</html>
